@@ -136,7 +136,7 @@ The Hugging Face version (~7.4GB) will include everything in this GitHub repo pl
 ### Prerequisites
 
 - Python 3.8+
-- CUDA-capable GPU (11GB+ VRAM recommended)
+- CUDA-capable GPU (NVIDIA A100 was used for all experiments on Google Colab)
 
 ### Quick Start (GitHub only)
 
