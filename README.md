@@ -43,7 +43,6 @@ All experiment notebooks are in `notebooks/`, numbered by execution order and ma
 | 12 | `12_exp2c_calibration_ece.ipynb` | Exp 2C | Expected Calibration Error analysis |
 | 13 | `13_exp3_xai_gradcam.ipynb` | Exp 3 | Grad-CAM explainability visualizations (Table 5.25) |
 | 14 | `14_exp3_hitl_neuroradiology.ipynb` | Exp 3 | HITL evaluation forms + neuroradiologist review (Tables 5.26-5.30) |
-| 15 | `15_augmentation_results.ipynb` | Results | Summary of augmentation experiment results |
 
 ## Repository Structure
 
@@ -55,7 +54,7 @@ thesis-brain-tumor-stylegan2/
 |-- .gitignore
 |-- .gitattributes                     # Git LFS tracking
 |
-|-- notebooks/                         # 16 experiment notebooks (see table above)
+|-- notebooks/                         # 15 experiment notebooks (see table above)
 |
 |-- src/                               # Standalone Python modules
 |   |-- dataloader.py                  # Custom DataLoader for K-Fold training
