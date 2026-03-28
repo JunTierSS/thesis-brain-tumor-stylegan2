@@ -159,11 +159,12 @@ huggingface-cli download JunTierSS/thesis-brain-tumor-stylegan2 --repo-type data
 
 ### Running on Google Colab
 
-Most notebooks were developed on Google Colab. To run them:
+Most notebooks were developed and tested on Google Colab (October 2025 runtime environment). To run them:
 
 1. Upload the notebook to Colab
-2. Mount your Google Drive and update paths accordingly
-3. The notebooks reference paths like `/content/drive/MyDrive/TESIS/...` which correspond to this repository's directory structure
+2. **Important:** Use the Colab runtime from **October 2025** or earlier to ensure compatibility with the library versions used in this thesis. Newer runtimes may have breaking changes in PyTorch, torchvision, or CUDA dependencies.
+3. Mount your Google Drive and update paths accordingly
+4. The notebooks reference paths like `/content/drive/MyDrive/TESIS/...` which correspond to this repository's directory structure
 
 ## Dataset
 
