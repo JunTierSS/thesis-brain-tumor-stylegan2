@@ -201,6 +201,6 @@ The framework consists of three main stages:
 
 ## Acknowledgments
 
-- [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch) by NVIDIA
-- [Encoder4Editing](https://github.com/omertov/encoder4editing) by Omer Tov et al.
-- Brain tumor MRI dataset contributors
+- **Brain Tumor MRI Dataset** by [Jun Cheng (Figshare)](https://figshare.com/articles/dataset/brain_tumor_dataset/1512427) - Original brain tumor MRI dataset with glioma, meningioma, and pituitary classes
+- **[StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch)** by Karras et al. (NVIDIA, NeurIPS 2020) - Training Generative Adversarial Networks with Limited Data
+- **[Encoder4Editing](https://github.com/omertov/encoder4editing)** by Tov et al. (SIGGRAPH 2021) - Designing an Encoder for StyleGAN Image Manipulation
