@@ -118,13 +118,11 @@ thesis-brain-tumor-stylegan2/
 
 ## Full Repository (Hugging Face)
 
-> **Note:** The Hugging Face dataset is currently being uploaded and is not yet complete. This section will be updated once the upload finishes.
-
-The complete repository including trained models, dataset splits, synthetic images, and feature embeddings will be available on Hugging Face:
+The complete repository including trained models, dataset splits, synthetic images, and feature embeddings is available on Hugging Face:
 
 **[huggingface.co/datasets/JunTierSS/thesis-brain-tumor-stylegan2](https://huggingface.co/datasets/JunTierSS/thesis-brain-tumor-stylegan2)**
 
-The Hugging Face version (~7.4GB) will include everything in this GitHub repo plus:
+The Hugging Face version includes everything in this GitHub repo plus:
 - StyleGAN2-ADA trained models (`.pkl`, 352MB each)
 - E4E encoder, CNN ResNet-50, and supervised encoder checkpoints (`.pt`)
 - K-Fold CNN checkpoints (`.ckpt`, 9 files)
