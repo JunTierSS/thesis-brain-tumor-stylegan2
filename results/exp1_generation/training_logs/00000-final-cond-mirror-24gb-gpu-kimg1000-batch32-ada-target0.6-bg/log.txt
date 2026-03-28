@@ -1,0 +1,704 @@
+Loading training set...
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+
+Num images:  6128
+Image shape: [1, 256, 256]
+Label shape: [3]
+
+Constructing networks...
+starting G epochs:  0.0
+Setting up PyTorch plugin "bias_act_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/bias_act.py:50: UserWarning: Failed to build CUDA kernels for bias_act. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/bias_act.py", line 48, in _init
+    _plugin = custom_ops.get_plugin('bias_act_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2138, in _jit_compile
+    _write_ninja_file_and_build_library(
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2248, in _write_ninja_file_and_build_library
+    verify_ninja_availability()
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2309, in verify_ninja_availability
+    raise RuntimeError("Ninja is required to load C++ extensions (pip install ninja to get it)")
+RuntimeError: Ninja is required to load C++ extensions (pip install ninja to get it)
+
+  warnings.warn('Failed to build CUDA kernels for bias_act. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2138, in _jit_compile
+    _write_ninja_file_and_build_library(
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2248, in _write_ninja_file_and_build_library
+    verify_ninja_availability()
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2309, in verify_ninja_availability
+    raise RuntimeError("Ninja is required to load C++ extensions (pip install ninja to get it)")
+RuntimeError: Ninja is required to load C++ extensions (pip install ninja to get it)
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+
+Generator             Parameters  Buffers  Output shape         Datatype
+---                   ---         ---      ---                  ---     
+mapping.embed         2048        -        [32, 512]            float32 
+mapping.fc0           524800      -        [32, 512]            float32 
+mapping.fc1           262656      -        [32, 512]            float32 
+mapping.fc2           262656      -        [32, 512]            float32 
+mapping.fc3           262656      -        [32, 512]            float32 
+mapping.fc4           262656      -        [32, 512]            float32 
+mapping.fc5           262656      -        [32, 512]            float32 
+mapping.fc6           262656      -        [32, 512]            float32 
+mapping.fc7           262656      -        [32, 512]            float32 
+mapping               -           512      [32, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [32, 512, 4, 4]      float32 
+synthesis.b4.torgb    263169      -        [32, 1, 4, 4]        float32 
+synthesis.b4:0        8192        16       [32, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [32, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [32, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [32, 512, 8, 8]      float32 
+synthesis.b8.torgb    263169      -        [32, 1, 8, 8]        float32 
+synthesis.b8:0        -           16       [32, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [32, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [32, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [32, 512, 16, 16]    float32 
+synthesis.b16.torgb   263169      -        [32, 1, 16, 16]      float32 
+synthesis.b16:0       -           16       [32, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [32, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [32, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [32, 512, 32, 32]    float16 
+synthesis.b32.torgb   263169      -        [32, 1, 32, 32]      float16 
+synthesis.b32:0       -           16       [32, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [32, 512, 32, 32]    float32 
+synthesis.b64.conv0   2622465     4112     [32, 512, 64, 64]    float16 
+synthesis.b64.conv1   2622465     4112     [32, 512, 64, 64]    float16 
+synthesis.b64.torgb   263169      -        [32, 1, 64, 64]      float16 
+synthesis.b64:0       -           16       [32, 512, 64, 64]    float16 
+synthesis.b64:1       -           -        [32, 512, 64, 64]    float32 
+synthesis.b128.conv0  1442561     16400    [32, 256, 128, 128]  float16 
+synthesis.b128.conv1  721409      16400    [32, 256, 128, 128]  float16 
+synthesis.b128.torgb  131585      -        [32, 1, 128, 128]    float16 
+synthesis.b128:0      -           16       [32, 256, 128, 128]  float16 
+synthesis.b128:1      -           -        [32, 256, 128, 128]  float32 
+synthesis.b256.conv0  426369      65552    [32, 128, 256, 256]  float16 
+synthesis.b256.conv1  213249      65552    [32, 128, 256, 256]  float16 
+synthesis.b256.torgb  65793       -        [32, 1, 256, 256]    float16 
+synthesis.b256:0      -           16       [32, 128, 256, 256]  float16 
+synthesis.b256:1      -           -        [32, 128, 256, 256]  float32 
+---                   ---         ---      ---                  ---     
+Total                 30292628    175568   -                    -       
+
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+Setting up PyTorch plugin "upfirdn2d_plugin"... Failed!
+/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py:34: UserWarning: Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 32, in _init
+    _plugin = custom_ops.get_plugin('upfirdn2d_plugin', sources=sources, extra_cuda_cflags=['--use_fast_math'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/custom_ops.py", line 110, in get_plugin
+    torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2164, in _jit_compile
+    return _import_module_from_library(name, build_directory, is_python_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2632, in _import_module_from_library
+    module = importlib.util.module_from_spec(spec)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: /root/.cache/torch_extensions/py312_cu126/upfirdn2d_plugin/upfirdn2d_plugin.so: cannot open shared object file: No such file or directory
+
+  warnings.warn('Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n' + traceback.format_exc())
+
+Discriminator  Parameters  Buffers  Output shape         Datatype
+---            ---         ---      ---                  ---     
+b256.fromrgb   256         16       [32, 128, 256, 256]  float16 
+b256.skip      32768       16       [32, 256, 128, 128]  float16 
+b256.conv0     147584      16       [32, 128, 256, 256]  float16 
+b256.conv1     295168      16       [32, 256, 128, 128]  float16 
+b256           -           16       [32, 256, 128, 128]  float16 
+b128.skip      131072      16       [32, 512, 64, 64]    float16 
+b128.conv0     590080      16       [32, 256, 128, 128]  float16 
+b128.conv1     1180160     16       [32, 512, 64, 64]    float16 
+b128           -           16       [32, 512, 64, 64]    float16 
+b64.skip       262144      16       [32, 512, 32, 32]    float16 
+b64.conv0      2359808     16       [32, 512, 64, 64]    float16 
+b64.conv1      2359808     16       [32, 512, 32, 32]    float16 
+b64            -           16       [32, 512, 32, 32]    float16 
+b32.skip       262144      16       [32, 512, 16, 16]    float16 
+b32.conv0      2359808     16       [32, 512, 32, 32]    float16 
+b32.conv1      2359808     16       [32, 512, 16, 16]    float16 
+b32            -           16       [32, 512, 16, 16]    float16 
+b16.skip       262144      16       [32, 512, 8, 8]      float32 
+b16.conv0      2359808     16       [32, 512, 16, 16]    float32 
+b16.conv1      2359808     16       [32, 512, 8, 8]      float32 
+b16            -           16       [32, 512, 8, 8]      float32 
+b8.skip        262144      16       [32, 512, 4, 4]      float32 
+b8.conv0       2359808     16       [32, 512, 8, 8]      float32 
+b8.conv1       2359808     16       [32, 512, 4, 4]      float32 
+b8             -           16       [32, 512, 4, 4]      float32 
+mapping.embed  2048        -        [32, 512]            float32 
+mapping.fc0    262656      -        [32, 512]            float32 
+mapping.fc1    262656      -        [32, 512]            float32 
+mapping.fc2    262656      -        [32, 512]            float32 
+mapping.fc3    262656      -        [32, 512]            float32 
+mapping.fc4    262656      -        [32, 512]            float32 
+mapping.fc5    262656      -        [32, 512]            float32 
+mapping.fc6    262656      -        [32, 512]            float32 
+mapping.fc7    262656      -        [32, 512]            float32 
+b4.mbstd       -           -        [32, 513, 4, 4]      float32 
+b4.conv        2364416     16       [32, 512, 4, 4]      float32 
+b4.fc          4194816     -        [32, 512]            float32 
+b4.out         262656      -        [32, 512]            float32 
+b4             -           -        [32, 1]              float32 
+---            ---         ---      ---                  ---     
+Total          31229312    416      -                    -       
+
+Setting up augmentation...
+Distributing across 1 GPUs...
+Setting up training phases...
+
+Aborted!

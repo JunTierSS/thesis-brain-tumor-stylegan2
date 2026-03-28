@@ -1,0 +1,15 @@
+{
+  "detected_layout": "tumor_first",
+  "used_layout": "tumor_first",
+  "totals": {
+    "files_seen": 439,
+    "processed": 437
+  },
+  "reasons": {
+    "ok": 437,
+    "bad_ext": 2
+  },
+  "samples": {
+    "bad_ext": "C:\\Users\\Junwei\\Documents\\Tesis\\Datasetexperiment11\\Testing_WebPlanes\\notumor\\axial\\35b06a994ca05d4b9cb985c188c438.webp"
+  }
+}

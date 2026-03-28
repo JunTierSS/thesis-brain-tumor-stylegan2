@@ -1,0 +1,15 @@
+Loading training set...
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/dataloader.py:627: UserWarning: This DataLoader will create 32 worker processes in total. Our suggested max number of worker in current system is 12, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+
+Aborted!
+Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7d7a8c27bce0>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/data/dataloader.py", line 1664, in __del__
+    self._shutdown_workers()
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/data/dataloader.py", line 1622, in _shutdown_workers
+    if self._persistent_workers or self._workers_status[worker_id]:
+                                   ^^^^^^^^^^^^^^^^^^^^
+AttributeError: '_MultiProcessingDataLoaderIter' object has no attribute '_workers_status'

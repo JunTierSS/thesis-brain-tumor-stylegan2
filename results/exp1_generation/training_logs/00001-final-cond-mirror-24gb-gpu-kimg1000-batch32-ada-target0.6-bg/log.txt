@@ -1,0 +1,177 @@
+Loading training set...
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+
+Num images:  6128
+Image shape: [1, 256, 256]
+Label shape: [3]
+
+Constructing networks...
+starting G epochs:  0.0
+Setting up PyTorch plugin "bias_act_plugin"... Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... Done.
+
+Generator             Parameters  Buffers  Output shape         Datatype
+---                   ---         ---      ---                  ---     
+mapping.embed         2048        -        [32, 512]            float32 
+mapping.fc0           524800      -        [32, 512]            float32 
+mapping.fc1           262656      -        [32, 512]            float32 
+mapping.fc2           262656      -        [32, 512]            float32 
+mapping.fc3           262656      -        [32, 512]            float32 
+mapping.fc4           262656      -        [32, 512]            float32 
+mapping.fc5           262656      -        [32, 512]            float32 
+mapping.fc6           262656      -        [32, 512]            float32 
+mapping.fc7           262656      -        [32, 512]            float32 
+mapping               -           512      [32, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [32, 512, 4, 4]      float32 
+synthesis.b4.torgb    263169      -        [32, 1, 4, 4]        float32 
+synthesis.b4:0        8192        16       [32, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [32, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [32, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [32, 512, 8, 8]      float32 
+synthesis.b8.torgb    263169      -        [32, 1, 8, 8]        float32 
+synthesis.b8:0        -           16       [32, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [32, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [32, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [32, 512, 16, 16]    float32 
+synthesis.b16.torgb   263169      -        [32, 1, 16, 16]      float32 
+synthesis.b16:0       -           16       [32, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [32, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [32, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [32, 512, 32, 32]    float16 
+synthesis.b32.torgb   263169      -        [32, 1, 32, 32]      float16 
+synthesis.b32:0       -           16       [32, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [32, 512, 32, 32]    float32 
+synthesis.b64.conv0   2622465     4112     [32, 512, 64, 64]    float16 
+synthesis.b64.conv1   2622465     4112     [32, 512, 64, 64]    float16 
+synthesis.b64.torgb   263169      -        [32, 1, 64, 64]      float16 
+synthesis.b64:0       -           16       [32, 512, 64, 64]    float16 
+synthesis.b64:1       -           -        [32, 512, 64, 64]    float32 
+synthesis.b128.conv0  1442561     16400    [32, 256, 128, 128]  float16 
+synthesis.b128.conv1  721409      16400    [32, 256, 128, 128]  float16 
+synthesis.b128.torgb  131585      -        [32, 1, 128, 128]    float16 
+synthesis.b128:0      -           16       [32, 256, 128, 128]  float16 
+synthesis.b128:1      -           -        [32, 256, 128, 128]  float32 
+synthesis.b256.conv0  426369      65552    [32, 128, 256, 256]  float16 
+synthesis.b256.conv1  213249      65552    [32, 128, 256, 256]  float16 
+synthesis.b256.torgb  65793       -        [32, 1, 256, 256]    float16 
+synthesis.b256:0      -           16       [32, 128, 256, 256]  float16 
+synthesis.b256:1      -           -        [32, 128, 256, 256]  float32 
+---                   ---         ---      ---                  ---     
+Total                 30292628    175568   -                    -       
+
+
+Discriminator  Parameters  Buffers  Output shape         Datatype
+---            ---         ---      ---                  ---     
+b256.fromrgb   256         16       [32, 128, 256, 256]  float16 
+b256.skip      32768       16       [32, 256, 128, 128]  float16 
+b256.conv0     147584      16       [32, 128, 256, 256]  float16 
+b256.conv1     295168      16       [32, 256, 128, 128]  float16 
+b256           -           16       [32, 256, 128, 128]  float16 
+b128.skip      131072      16       [32, 512, 64, 64]    float16 
+b128.conv0     590080      16       [32, 256, 128, 128]  float16 
+b128.conv1     1180160     16       [32, 512, 64, 64]    float16 
+b128           -           16       [32, 512, 64, 64]    float16 
+b64.skip       262144      16       [32, 512, 32, 32]    float16 
+b64.conv0      2359808     16       [32, 512, 64, 64]    float16 
+b64.conv1      2359808     16       [32, 512, 32, 32]    float16 
+b64            -           16       [32, 512, 32, 32]    float16 
+b32.skip       262144      16       [32, 512, 16, 16]    float16 
+b32.conv0      2359808     16       [32, 512, 32, 32]    float16 
+b32.conv1      2359808     16       [32, 512, 16, 16]    float16 
+b32            -           16       [32, 512, 16, 16]    float16 
+b16.skip       262144      16       [32, 512, 8, 8]      float32 
+b16.conv0      2359808     16       [32, 512, 16, 16]    float32 
+b16.conv1      2359808     16       [32, 512, 8, 8]      float32 
+b16            -           16       [32, 512, 8, 8]      float32 
+b8.skip        262144      16       [32, 512, 4, 4]      float32 
+b8.conv0       2359808     16       [32, 512, 8, 8]      float32 
+b8.conv1       2359808     16       [32, 512, 4, 4]      float32 
+b8             -           16       [32, 512, 4, 4]      float32 
+mapping.embed  2048        -        [32, 512]            float32 
+mapping.fc0    262656      -        [32, 512]            float32 
+mapping.fc1    262656      -        [32, 512]            float32 
+mapping.fc2    262656      -        [32, 512]            float32 
+mapping.fc3    262656      -        [32, 512]            float32 
+mapping.fc4    262656      -        [32, 512]            float32 
+mapping.fc5    262656      -        [32, 512]            float32 
+mapping.fc6    262656      -        [32, 512]            float32 
+mapping.fc7    262656      -        [32, 512]            float32 
+b4.mbstd       -           -        [32, 513, 4, 4]      float32 
+b4.conv        2364416     16       [32, 512, 4, 4]      float32 
+b4.fc          4194816     -        [32, 512]            float32 
+b4.out         262656      -        [32, 512]            float32 
+b4             -           -        [32, 1]              float32 
+---            ---         ---      ---                  ---     
+Total          31229312    416      -                    -       
+
+Setting up augmentation...
+Distributing across 1 GPUs...
+Setting up training phases...
+Exporting sample images...
+Initializing logs...
+Training for 1000 kimg...
+
+tick 0     kimg 0.0      time 2m 14s       sec/tick 43.1    sec/kimg 1346.05 maintenance 90.7   cpumem 3.07   gpumem 17.78  augment 0.000
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/click/core.py", line 1383, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/click/core.py", line 1246, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/click/core.py", line 814, in invoke
+    return callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/train.py", line 575, in main
+    subprocess_fn(rank=0, args=args, temp_dir=temp_dir)
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/train.py", line 422, in subprocess_fn
+    training_loop.training_loop(rank=rank, **args)
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/training/training_loop.py", line 290, in training_loop
+    loss.accumulate_gradients(phase=phase.name, real_img=real_img, real_c=real_c, gen_z=gen_z, gen_c=gen_c, sync=sync, gain=gain)
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/training/loss.py", line 114, in accumulate_gradients
+    gen_logits = self.run_D(gen_img, gen_c, sync=False) # Gets synced by loss_Dreal.
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/training/loss.py", line 57, in run_D
+    img = self.augment_pipe(img)
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/training/augment.py", line 290, in forward
+    images = upfirdn2d.upsample2d(x=images, f=self.Hz_geom, up=2)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 336, in upsample2d
+    fw, fh = _get_filter_size(f)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py", line 64, in _get_filter_size
+    fw = int(fw)
+         ^^^^^^^
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/train.py", line 582, in <module>
+    main() # pylint: disable=no-value-for-parameter
+    ^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/click/core.py", line 1462, in __call__
+    return self.main(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/click/core.py", line 1395, in main
+    echo(file=sys.stderr)
+  File "/usr/local/lib/python3.12/dist-packages/click/utils.py", line 321, in echo
+    file.write(out)  # type: ignore
+    ^^^^^^^^^^^^^^^
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/dnnlib/util.py", line 88, in write
+    self.stdout.write(text)
+  File "/content/drive/MyDrive/colab-sg2-ada-pytorch/stylegan2-ada-pytorch/dnnlib/util.py", line 88, in write
+    self.stdout.write(text)
+KeyboardInterrupt
