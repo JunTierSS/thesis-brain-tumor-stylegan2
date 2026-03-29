@@ -313,8 +313,8 @@ def audit_and_process_no_mask(
 # ----------------- CLI -----------------
 def build_argparser():
     p = argparse.ArgumentParser(description="Recorta SOLO con bbox por IMAGEN; salida size×size (ignora máscaras).")
-    p.add_argument('--input', type=str,  default="C:/Users/Junwei/Downloads/dataset/datasetlisto")
-    p.add_argument('--output', type=str, default="C:/Users/Junwei/Downloads/dataset/datasetclean")
+    p.add_argument('--input', type=str,  required=True, help="Path to input dataset directory")
+    p.add_argument('--output', type=str, required=True, help="Path to output (cleaned) directory")
     p.add_argument('--size', type=int, default=256, help="Tamaño final (lado) de imagen")
     p.add_argument('--equalize', action='store_true', help="Equalize (ImageOps) solo a la imagen")
     p.add_argument('--replicate-to-rgb', action='store_true', help="Replicar canal L a RGB para backbones preentrenados")

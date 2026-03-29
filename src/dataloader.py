@@ -253,8 +253,8 @@ def save_image_uint8(img_u8: np.ndarray, out_path: Path, ext: str):
 # -------------------------
 def main():
     ap = argparse.ArgumentParser("Convert .mat (Figshare Jun MRI) -> imágenes + máscara + borde por clase con nombres <PID>_<tumor>_<idx>.<ext>")
-    ap.add_argument("--in",  dest="in_dir",   default="C:/Users/Junwei/Downloads/dataset/datasetmat")
-    ap.add_argument("--out", dest="out_dir", default="C:/Users/Junwei/Downloads/dataset/datasetlisto")
+    ap.add_argument("--in",  dest="in_dir",   required=True, help="Path to input .mat files directory")
+    ap.add_argument("--out", dest="out_dir", required=True, help="Path to output directory")
     ap.add_argument("--ext", type=str, default="png", help="Extensión de salida: png|jpg|tif|... (default: png)")
     ap.add_argument("--skip_mask", action="store_true", help="No guardar la máscara aunque exista.")
     ap.add_argument("--skip_border", action="store_true", help="No guardar el borde aunque exista.")
@@ -272,8 +272,8 @@ def main():
     counters: Dict[Tuple[str, str], int] = {}
     # CSV de trazabilidad
     csv_path = out_dir / "index_conversion.csv"
-    csv_f = open(csv_path, "w", newline="", encoding="utf-8")
-    csv_w = csv.writer(csv_f)
+    _csv_file = open(csv_path, "w", newline="", encoding="utf-8")
+    csv_w = csv.writer(_csv_file)
     csv_w.writerow([
         "orig_mat", "loader", "pid", "label_id", "tumor",
         "out_image", "out_mask", "out_border"
@@ -350,7 +350,7 @@ def main():
             fail += 1
             print(f"[ERROR] {p}: {e}")
 
-    csv_f.close()
+    _csv_file.close()
     print(f"\n[FIN] Convertidos OK={ok} | Fallidos={fail} | Salida={out_dir}")
     print(f"[FIN] Índice CSV: {csv_path}")
 

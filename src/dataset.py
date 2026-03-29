@@ -50,7 +50,6 @@ class Dataset(data.Dataset):
         assert self.length, f"Didn't find any picture inside {folder}"
 
         self.transform = transforms.Compose([
-            #transforms.RandomHorizontalFlip(),
             transforms.Resize(image_size),
             transforms.ToTensor()
         ])
@@ -70,5 +69,6 @@ class Dataset(data.Dataset):
         with Image.open(path_keys[index]) as image_file:
             img = self.transform(image_file)
 
-        label = torch.from_numpy(np.eye(self.label_number)[label_index]).cuda().float()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        label = torch.from_numpy(np.eye(self.label_number)[label_index]).to(device).float()
         return img, label
