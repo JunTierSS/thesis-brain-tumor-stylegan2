@@ -33,3 +33,4 @@ stylegan2-ada-pytorch/runs/
 # Large generated directories (can be regenerated)
 synth_CAS/
 xai_batch_testset/
+data/projections_batch_all.zip
