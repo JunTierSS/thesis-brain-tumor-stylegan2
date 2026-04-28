@@ -1,0 +1,1023 @@
+
+
+
+\chapter{Proposed Method}
+
+This chapter outlines the methodology developed to address the research questions and objectives defined in this thesis. The proposed approach integrates advanced deep learning techniques for generative modeling and classification, with a particular emphasis on StyleGAN-C and CNNs. In addition, a human in the loop strategy is incorporated, whereby domain experts participate in the qualitative evaluation of synthetic images and provide feedback that guides the assessment and potential refinement of the models. The experiments are designed to evaluate the effectiveness, robustness, and explainability of the proposed framework in the context of brain tumor classification using MRI images. Each section below details a specific component of the methodology, including data preprocessing, model architecture, training procedures, evaluation metrics, and experimental protocols.\\
+
+Conceptually, the proposed framework can be viewed as a fusion in medical imaging. It combines three complementary sources of evidence: (i) generation of clinically validated class-
+conditional MRI images using StyleGAN-C, (ii) a classification strategy that uses StyleGAN-
+C to classify brain tumor MRI images, and (iii) an image based XAI module that enables
+clinicians to interpret model predictions in a clinically meaningful way. By integrating these three components within a unified pipeline, the framework aims to produce predictions that are not only accurate, but also structurally coherent and clinically interpretable.
+
+
+
+
+\begin{figure}[h]
+\centering
+\resizebox{1\linewidth}{!}{%
+\begin{tikzpicture}[
+  >=Latex,
+  node distance=10mm and 15mm,
+  box/.style={draw, rounded corners=2pt, fill=gray!5, align=center, minimum width=30mm, inner sep=4pt},
+  io/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110, fill=gray!5, align=center, minimum width=34mm},
+  decision/.style={diamond, draw, aspect=2, fill=gray!5, align=center, inner sep=1pt},
+  line/.style={->, thick, rounded corners=2pt}
+]
+
+% Row 1 (Experiment 1)
+\node[io]   (exp1)   {Experiment 1:\\ Training and Image Generation Validated by HITL};
+\node[box, right=of exp1] (exp2) {Experiment 2A/2B/2C:\\Inversion, Feature Extraction, Augmentation};
+\node[box, right=3 cm of exp2]  (select) {Select Best Classifier for Experiment 2};
+
+% Row 2 (XAI)
+\node[box, below=10mm of select] (xai) {Experiment 3:\\ XAI Explanation Validated by HITL};
+
+% Arrows Row 1
+\draw[line] (exp1) -- (exp2);
+\draw[line] (exp2) -- (select);
+
+% Arrows to Row 2 (XAI)
+\draw[line] (select) -- (xai);
+
+\end{tikzpicture}%
+}
+\caption{Experimental Pipeline Overview}
+\label{fig:experiment_pipeline}
+\end{figure}
+
+
+\section{Overall System Architecture}
+
+Figure~\ref{fig:overall_architecture} presents the overall architecture of the proposed framework, illustrating how the three main components --- generation, classification, and explainability --- are integrated into a unified pipeline under strict patient-level data leakage control.
+
+\begin{figure}[H]
+\centering
+\resizebox{0.88\textwidth}{!}{%
+\begin{tikzpicture}[
+  >=Latex,
+  node distance=6mm and 10mm,
+  box/.style={draw, rounded corners=2pt, fill=white, align=center, minimum width=28mm, minimum height=8mm, inner sep=3pt, font=\footnotesize},
+  line/.style={->, semithick},
+  gbox/.style={draw, dashed, rounded corners=4pt, inner sep=7pt, line width=0.6pt},
+]
+
+% === ROW 1: Data pipeline ===
+\node[box] (data) {MRI Dataset\\{\tiny Figshare, 3064 images}};
+\node[box, right=of data] (prep) {Preprocessing\\{\tiny ROI + Resize $256\!\times\!256$}};
+\node[box, right=of prep] (split) {Patient-Level\\Train / Test Split};
+
+\draw[line] (data) -- (prep);
+\draw[line] (prep) -- (split);
+
+% === ROW 2: Experiment 1 ===
+\node[box, below=16mm of data] (gan) {\textbf{StyleGAN-C}\\{\tiny Class-conditional GAN}};
+\node[box, right=of gan] (synth) {Synthetic MRI\\{\tiny FID, LPIPS, SSIM}};
+\node[box, right=of synth] (hitl1) {HITL Validation\\{\tiny Neuroradiologist}};
+
+\draw[line] (split.south) -- ++(0,-2mm) -| node[above left, font=\tiny, pos=0.75]{Train set} (gan.north);
+\draw[line] (gan) -- (synth);
+\draw[line] (synth) -- (hitl1);
+
+% === ROW 3: Experiment 2 ===
+\node[box, below=16mm of gan] (e2a) {Exp 2A\\{\tiny Inference by}\\{\tiny generation (LPIPS)}};
+\node[box, right=of e2a] (e2b) {Exp 2B\\{\tiny Feature extraction}\\{\tiny CNN, e4e, Encoder}};
+\node[box, right=of e2b] (e2c) {Exp 2C\\{\tiny CNN + GAN}\\{\tiny augmentation}};
+
+\draw[line] (gan) -- (e2a);
+\draw[line] (synth) -- (e2b);
+\draw[line] (hitl1.south) -- ++(0,-2mm) -| (e2c.north);
+
+% === ROW 4: Experiment 3 ===
+\node[box, below=16mm of e2a] (best) {Best Classifier\\{\tiny Ensemble CNN, 0.960}};
+\node[box, right=of best] (gradcam) {Grad-CAM\\{\tiny Heatmaps}};
+\node[box, right=of gradcam] (hitl2) {HITL Evaluation\\{\tiny Confidence + Utility}};
+
+\draw[line] (e2a) -- (best);
+\draw[line] (e2b) -- (best);
+\draw[line] (e2c) -- (best);
+\draw[line] (best) -- (gradcam);
+\draw[line] (gradcam) -- (hitl2);
+
+% === GROUP BOXES ===
+\begin{scope}[on background layer]
+  \node[gbox, fill=gray!6, fit=(data)(prep)(split), label={[font=\scriptsize\bfseries]above:Data Preprocessing}] {};
+  \node[gbox, fill=blue!5, fit=(gan)(synth)(hitl1), label={[font=\scriptsize\bfseries]above:Experiment 1: Generation}] {};
+  \node[gbox, fill=green!5, fit=(e2a)(e2b)(e2c), label={[font=\scriptsize\bfseries]above:Experiment 2: Classification}] {};
+  \node[gbox, fill=orange!5, fit=(best)(gradcam)(hitl2), label={[font=\scriptsize\bfseries]above:Experiment 3: Explainability}] {};
+\end{scope}
+
+% === Leakage bar ===
+\node[draw, fill=red!8, rounded corners=2pt, font=\scriptsize\itshape, align=center, below=8mm of gradcam, minimum width=95mm] {Patient-Level Leakage Control --- all experiments};
+
+\end{tikzpicture}%
+}
+\caption{Overall system architecture. The pipeline integrates data preprocessing, class-conditional generation (Experiment~1), multi-strategy classification (Experiment~2), and explainability with clinical validation (Experiment~3), all under strict patient-level data leakage control.}
+\label{fig:overall_architecture}
+\end{figure}
+
+The implementation was developed using Python 3.12.12 within a Google Colab virtual machine running on Linux (x86\_64 architecture). The hardware configuration included an Intel Xeon CPU, 167\,GB of RAM, and an NVIDIA A100 GPU with 80\,GB of HBM memory, CUDA~12.x support, and AMP for mixed-precision training (fp16/fp32). Key libraries and frameworks used include \texttt{torch} 2.8.0+cu126 for deep learning, \texttt{torchvision}, the official NVLabs StyleGAN2-ADA (PyTorch) repository, and the LPIPS metric based on VGG. Additional utilities included \texttt{gdown} 5.2.0 for downloading assets, \texttt{numpy} 2.0.2 for numerical computations, \texttt{Pillow} 11.3.0 for image handling, \texttt{matplotlib} 3.10.0 for plotting, \texttt{ninja} 1.13.0 for build speedup, and \texttt{opensimplex} 0.4.5.1 for noise generation. Scikit-learn and scikit-image were also used for various preprocessing and evaluation tasks. GPU-based SSIM was computed using the \texttt{piq} package. Core Python modules such as \texttt{os}, \texttt{shutil}, \texttt{pathlib}, and \texttt{subprocess} were used extensively, although these are standard library modules and do not expose a \texttt{\_\_version\_\_} attribute. The \texttt{legacy} module employed for loading models is included as part of the StyleGAN2-ADA codebase and does not have a separate version identifier.
+During the preparation of this thesis, the default Google Colab libraries were updated by Google. 
+All experiments reported in this thesis were executed using the Colab environment as available in October~2025. For reproducibility, it is recommended to run the provided notebooks with package versions matching this October~2025 configuration.
+
+
+
+\section{Dataset Description}
+
+\begin{itemize}
+  
+    \item \textbf{Figshare Dataset:} This T1-weighted contrast-enhanced magnetic resonance dataset was acquired after Gd-DTPA injection from two hospitals in China: Nanfang Hospital, Guangzhou, and General Hospital, Tianjin Medical University, between September 2005 and October 2010. All images were obtained using a contrast dose of 0.1 mmol/kg Gd-DTPA administered at a rate of 2 ml/s. The scans have an in-plane resolution of $512 \times 512$ with pixel dimensions of $0.49 \times 0.49\,\text{mm}^2$, a slice thickness of 6 mm, and a slice gap of 1 mm. The dataset contains 3,064 images from 233 patients, distributed across three tumor types: \textit{meningioma} (708 images), \textit{glioma} (1,426 images), and \textit{pituitary} (930 images). It includes three standard anatomical views: axial, coronal, and sagittal~\cite{cheng2017figshare} \cite{Cheng2015}.\\
+    \end{itemize}
+
+By design, no patient appeared in both partitions (training and testing), ensuring that test performance genuinely reflected generalization to unseen subjects, rather than to new slices from patients already seen during training. As shown in Table~\ref{tab:dataset_all_one}, in addition to the full dataset, a reduced variant of the dataset was constructed by excluding MRI slices of poor diagnostic quality (e.g., slices with minimal tumor visibility or significant artifacts). This reduced dataset excludes 761 images, corresponding to approximately 25\% fewer images than the complete dataset. Both variants preserve patient-level leakage control in their train--test partitions.
+
+\begin{table}[ht]
+\centering
+\caption{Dataset summary Original vs.\ Reduced splits (Train/Test).}
+\label{tab:dataset_all_one}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+ & \multicolumn{2}{c}{Train (Original)} & \multicolumn{2}{c}{Test (Original)} & \multicolumn{2}{c}{Train (Reduced)} & \multicolumn{2}{c}{Test (Reduced)} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Class & Images & Patients & Images & Patients & Images & Patients & Images & Patients \\
+\midrule
+Glioma     & 980 & 59 & 446 & 30 & 634 & 54 & 312 & 29 \\
+Meningioma & 514 & 60 & 194 & 22 & 406 & 58 & 141 & 21 \\
+Pituitary  & 659 & 44 & 271 & 18 & 561 & 44 & 249 & 18 \\
+\midrule
+\textbf{Total} & \textbf{2153} & \textbf{163} & \textbf{911} & \textbf{70} & \textbf{1601} & \textbf{156} & \textbf{702} & \textbf{68} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\subsection{Image Preprocessing}
+The preprocessing pipeline applied to the MRI images comprises a sequence of carefully designed steps.
+\begin{enumerate}
+    \item \textbf{Image Loading and Labelling:} \\
+    Each image file is read into memory and assigned its tumor class label (glioma, meningioma, pituitary) together with a patient identifier taken from the original dataset structure. Files that cannot be loaded are skipped to maintain data integrity.
+
+    \item \textbf{Automatic Region of Interest (ROI) Extraction:}
+    \begin{itemize}
+        \item \textit{Grayscale Conversion:} The RGB image is converted to grayscale, reducing it from three channels to one. This simplifies subsequent processing, as most MRI scans are inherently grayscale.
+        \item \textit{Gaussian Blurring:} A Gaussian filter with a $3 \times 3$ kernel is applied to smooth the image and suppress high frequency noise.
+        \item \textit{Thresholding:} The blurred image is binarized using a fixed intensity.
+        \item \textit{Morphological Operations:} Erosion is applied to eliminate small noise regions, followed by dilation to restore the main object's size and fill small holes.
+        \item \textit{Contour Detection and Selection:} External contours in the binary mask are detected. The largest contour by area is selected, which is assumed to correspond to the main anatomical structure, such as the brain.
+        \item \textit{Bounding Box Determination:} The extreme points of the selected contour define a minimal bounding rectangle that encloses the ROI.
+        \item \textit{Image Cropping:} The original image is cropped to this bounding box, resulting in an image focused on the region of interest with minimal background.
+    \end{itemize}
+
+    \item \textbf{Resizing to Fixed Dimensions:} \\
+    The ROI is resized to a fixed square resolution $256 \times 256$ pixels. This sampling step standardizes input sizes for CNNs, reduces memory usage, and ensures batch compatibility.
+
+    \item \textbf{Saving the Processed Images:} \\
+    Processed images are saved in a new output directory using a uniform image format (PNG). This prepares the dataset for efficient loading during model training and evaluation.
+
+\end{enumerate}
+
+
+\subsection{Patient-wise data splits and leakage control}
+\label{subsec:patient_splits}
+
+\paragraph{Patient-wise partitioning.}
+Patient identifiers (PIDs) are first extracted from all preprocessed MRI slices, and all splits are defined at the patient level to avoid information leakage across training and testing. The full set of patients is then partitioned into:
+\begin{itemize}
+    \item a training patient set $\mathcal{G}_{\text{train}}$ (70\% of the patients),
+    \item a test patient set $\mathcal{G}_{\text{test}}$ (30\% of the patients),
+\end{itemize}
+such that
+\[
+\mathcal{G}_{\text{train}} \cap \mathcal{G}_{\text{test}} = \emptyset.
+\]
+
+All slices from patients in $\mathcal{G}_{\text{train}}$ are used exclusively for training, and all slices from patients in $\mathcal{G}_{\text{test}}$ are used exclusively for testing. This guarantees that no patient, and thus no slice from the same patient, appears in both the training and test sets.
+
+\paragraph{Leakage control and reproducibility.}
+Across all experiments, data leakage is controlled through a combination of structural constraints and implementation checks:
+\begin{itemize}
+    \item there is no overlap of patient identifiers between the training and test groups.
+    \item synthetic images used in augmentation and generation based classification experiments are generated only from real images belonging to patients in $\mathcal{G}_{\text{train}}$.
+\end{itemize}
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Template-Tesis-dii/img/secuence.png} % Sustituye "tu_imagen.jpg" con el nombre de tu archivo
+    \caption{Six similar sequences of glioma from the same patient.}
+    \label{fig:sequences}
+\end{figure}
+
+Multiple MRI sequences from the same patient can contain nearly identical slices. When these slices are split across training and testing sets, they introduce data leakage and risk overfitting, as the model may memorize patient-specific details.
+
+\newpage
+
+\section{Experiment 1: Image Generation}
+
+
+
+\begin{figure}[h]
+\centering
+\resizebox{1\linewidth}{!}{%
+\begin{tikzpicture}[
+  >=Latex,
+  node distance=10mm and 15mm,
+  box/.style={draw, rounded corners=2pt, fill=gray!5, align=center, minimum width=30mm, inner sep=4pt},
+  io/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110, fill=gray!5, align=center, minimum width=34mm},
+  decision/.style={diamond, draw, aspect=2, fill=gray!5, align=center, inner sep=1pt},
+  line/.style={->, thick, rounded corners=2pt}
+]
+
+% Row 1 (left to right)
+\node[io]   (data)   {MRI Dataset};
+\node[box, right=of data] (prep) {Preprocessing};
+\node[box, right=of prep] (gan)  {StyleGAN-C\\\small train $G/D$};
+\node[box, right=3 cm of gan]  (reco) {Class-conditioned\\reconstruction\\$\hat{x}_y = G(E(x)+e_y,y)$};
+
+% Evaluation branches
+\node[box, below left=10mm and -6mm of reco] (quant) {Quantitative\\FID / LPIPS / SSIM};
+\node[box, below right=10mm and -6mm of reco] (clin) {Expert review\\(sample $S_t$, $n$ per class)};
+
+% Decision
+\node[decision, below=20mm of reco] (dec) {Decision\\(retrain?)};
+
+% Outputs directly under decision
+\node[io, below=12mm of dec, minimum width=42mm] (out) {Outputs\\models \& reports};
+
+% Arrows row 1
+\draw[line] (data) -- (prep);
+\draw[line] (prep) -- (gan);
+\draw[line] (gan) -- (reco);
+
+\draw[line] (reco) |- (quant);
+\draw[line] (reco) |- (clin);
+
+\draw[line] (quant) |- (dec);
+\draw[line] (clin)  |- (dec);
+
+% No -> straight down to outputs
+\draw[line] (dec) -- node[right]{No} (out);
+
+% Yes -> explicit clean L (no triangle)
+\draw[line] (dec.south) -- (dec.west -| gan.south)
+           -- node[pos=0.5, above]{Yes} (gan.south);
+
+\end{tikzpicture}%
+}
+\caption{Experiment 1 Image Generation Pipeline.}
+\label{fig:exp1_pipeline}
+\end{figure}
+
+
+\subsection{Conditional StyleGAN2-ADA Architecture}
+\label{subsec:stylegan_arch}
+In this thesis, \textbf{StyleGAN-C} denotes a lightly modified conditional version of StyleGAN2-ADA \cite{Karras2019stylegan2}, adapted to brain tumor MRI synthesis with minimal architectural changes. A target resolution of $256\times256$ pixels was selected as it strikes a balance between performance and computational efficiency. Higher resolutions (e.g., $512\times512$) could capture finer anatomical detail but at significantly higher computational cost, while lower resolutions (e.g., $128\times128$) would reduce demands but risk losing diagnostically relevant information. \\
+
+The generator extends StyleGAN2-ADA with explicit class conditioning. A latent vector \(z \sim \mathcal{N}(0, I)\) is mapped by the mapping network to a disentangled code \(w = f(z)\), while each discrete label \(y \in \mathcal{Y}\) is embedded via a learnable layer \(E(y) = e_y \in \mathbb{R}^d\). To steer synthesis toward class specific distributions, the model fuses class and style in \(\mathcal{W}\) using an additive rule \(w^\star = w + A e_y\) with a learnable projection \(A\). The synthesis network \(G(\cdot, y)\) then applies per layer style modulation (AdaIN) driven by affine transforms of \(w^\star\) , yielding class controlled images \(\hat{x}_y = G(w^\star, y)\). 
+\\
+
+For brain MRI, the original implementation is adapted to operate on \textbf{single-channel} grayscale images, so the generator outputs one channel and the discriminator input stem accepts tensors of shape \(1 \times H \times W\). Operationally, sampling proceeds as
+\(z \rightarrow w \rightarrow w^\star = w + A e_y \rightarrow \hat{x}_y = G(w^\star, y)\), with truncation in \(\mathcal{W}\) to control sample typicality.
+
+
+\subsection{Training}
+
+A patient-level split of 70\%-30\% was applied to create the training and testing partitions, respectively, ensuring that no patient appears in both splits and thus preventing data leakage in subsequent experiments; only the training set was used to fit the conditional GAN. Class conditionality was enabled by organizing images into class specific folders and building a filename class index mapping consumed by the dataset loader. The single channel (grayscale) StyleGAN-C was trained with StyleGAN2-ADA using the following hyperparameters: \texttt{\string--cfg=24gb-gpu}, \texttt{\string--gpus=1}, \texttt{\string--batch=32}, \texttt{\string--cond=1}, \texttt{\string--aug=ada}, \texttt{\string--target=0.6}, \texttt{\string--augpipe=bg}, \texttt{\string--mirror=1}, \texttt{\string--snap=50}, \texttt{\string--workers=12}, \texttt{\string--metrics=none}, \texttt{\string--kimg=1000}.
+
+
+\subsection{Image Generation}
+
+For image synthesis, the repository’s generation utility is used to initialize the trained generator at a selected network snapshot. Under class conditional operation, a designated class identifier guides the synthesis toward the corresponding semantic manifold, while optional truncation in the \(\mathcal{W}\) space modulates sample typicality. The utility produces seed-controlled outputs.
+
+
+\subsection{Class-Conditioned Image Generation by Reconstruction}
+\label{subsec:generation_reconstruction}
+
+\begin{figure}[ht]
+\centering
+\resizebox{1\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.0cm and 1.3cm, >=Latex]
+
+\tikzset{
+  block/.style={
+    rectangle, rounded corners=1.6mm,
+    draw, thick, align=center,
+    minimum height=0.95cm, minimum width=3.2cm,
+    inner sep=3.5pt, font=\scriptsize
+  },
+  io/.style={
+    trapezium, trapezium left angle=70, trapezium right angle=110,
+    draw, thick, align=center,
+    minimum height=0.9cm, minimum width=3.2cm,
+    inner sep=3.5pt, font=\scriptsize
+  },
+  arrow/.style={->, thick},
+  dashedarrow/.style={->, thick, dashed},
+  dframe/.style={
+    draw=black, line width=0.9pt, densely dashed,
+    rounded corners=2mm, inner sep=7pt
+  }
+}
+
+% ==========================
+% Script 1 (top row)
+% ==========================
+\node[io] (ds) {Real test images $x$};
+\node[block, right=of ds] (proj) {Latent projection\\from real images};
+\node[block, right=of proj] (proto) {Prototypes\\per class (W+)};
+
+\draw[arrow] (ds) -- (proj);
+\draw[arrow] (proj) -- (proto);
+
+% ==========================
+% Script 2 (bottom row)
+% ==========================
+\node[io, below=1.6cm of ds] (x2) {Real test images $x$};
+\node[block, right=of x2] (wreal) {Project real image\\to latent};
+\node[block, right=of wreal] (pair) {Latent pairing\\(real, prototype)};
+\node[block, right=of pair] (interp) {Latent interpolation};
+\node[io, right=of interp] (cfset) {Generated images\\per patient};
+
+\draw[arrow] (x2) -- (wreal);
+\draw[arrow] (wreal) -- (pair);
+\draw[arrow] (pair) -- (interp);
+\draw[arrow] (interp) -- (cfset);
+
+% Cross-script dependency
+\draw[dashedarrow] (proto.south) to[out=-90, in=90, looseness=0.9] (pair.north);
+
+% ==========================
+% Dotted frames (background)
+% ==========================
+\begin{scope}[on background layer]
+  \node[dframe, fit=(ds)(proj)(proto)] (frame1) {};
+  \node[dframe, fit=(x2)(wreal)(pair)(interp)(cfset)] (frame2) {};
+\end{scope}
+
+% Titles for frames
+\node[font=\scriptsize, anchor=south] at (frame1.north) {Script 1: Prototype construction};
+\node[font=\scriptsize, anchor=south] at (frame2.north) {Script 2: Class conditioned reconstruction};
+
+\end{tikzpicture}%
+}
+\caption{Experiment 1 (Part 2): two scripts. Script 1 computes latent prototypes per class from real images. Script 2 reconstructs each real test image by interpolating its latent code toward each class prototype.}
+\label{fig:exp1_part2_two_scripts}
+\end{figure}
+
+
+
+Class conditioned images are generated through a prototype based reconstruction process that starts from real MRI slices and produces sets of class specific counterfactuals. First, for each tumor class \(c \in \mathcal{C}\), a latent prototype \(\mu_c \in \mathcal{W}^+\) is estimated by projecting multiple training images of that class with the StyleGAN2-ADA \cite{Karras2019stylegan2} projector and averaging their final inverted codes. Given an input image \(x\) from the test set, an inversion module \(P(\cdot)\) maps \(x\) into the latent space of the StyleGAN-C generator, yielding a patient specific code \(w_{\text{real}} = P(x)\). For each target class \(c \in \mathcal{C}\), a two point latent pair \((w_{\text{real}}, \mu_c)\) is then used to define an interpolation trajectory in \(\mathcal{W}^+\). \\
+
+Iterating over all classes and interpolation steps produces one trajectory that remains close to the original class and additional counterfactual trajectories that move towards alternative class prototypes, enabling controlled class wise variation while preserving patient specific structure.
+
+
+\subsection{Evaluation Protocol}
+\label{subsec:evaluation_protocol}
+
+\paragraph{Quantitative Evaluation.}
+To assess the quality of generated images, the thesis employs the following metrics:
+\begin{itemize}
+    \item \textbf{FID (Fréchet Inception Distance):} measuring distributional similarity between real and generated images.
+    \item \textbf{LPIPS (Learned Perceptual Image Patch Similarity):} evaluating perceptual similarity with respect to the input.
+    \item \textbf{SSIM (Structural Similarity Index):} assessing structural fidelity relevant to anatomical integrity.
+    \item \textbf{PSNR (Peak Signal-to-Noise Ratio):} a reconstruction metric that compares each generated image to its real reference at the pixel level; higher PSNR indicates lower distortion and therefore closer agreement between synthetic and real images.
+\end{itemize}
+
+FID is computed at the set level by comparing the distribution of real images against the distribution of generated images within each class. In contrast, LPIPS, SSIM, and PSNR are evaluated in a pairwise manner only in the reconstruction setting.
+
+
+\paragraph{Qualitative Evaluation (Clinical).}
+One neuroradiologist performed a blinded qualitative evaluation of a set of \(N\) real and generated MR images. This experiment is designed as a pilot feasibility study with a single evaluator, intended to provide initial evidence on the clinical plausibility of synthetic images and the utility of XAI overlays. The sample size ($n=33$ images) limits statistical power but establishes a protocol for future multi-reader studies. The expert was asked to:
+\begin{enumerate}
+    \item Rate the \textbf{diagnostic confidence and perceived clinical utility} of each image using a 1--5 Likert scale.
+    \item Judge whether each generated image is \textbf{consistent with its assigned tumor class}.
+\end{enumerate}
+
+
+
+
+\newpage
+
+\section{Experiment 2: Classification Models Integrating StyleGAN-C}
+\label{sec:exp2_overview}
+
+Experiment~2 investigates how to best integrate the conditional StyleGAN-C generator into the brain tumor classification pipeline. The main goal is to explore different classification strategies that exploit the generator, either through latent inversion and counterfactual synthesis or through synthetic data augmentation, and to identify the most effective approach. To this end, three complementary subexperiments are defined.\\
+
+Experiment~2A studies \emph{optimization based latent inversion}. For each real MRI slice, a latent code in the StyleGAN-C $W^+$ space is obtained by running the projector, and class specific prototypes are estimated by averaging multiple projected codes per class. These latent representations are then used to generate class conditional trajectories, which support two classifiers: (i) a generation based classifier that assigns the label by minimizing LPIPS distance between the real slice and its class conditioned reconstructions, and (ii) a CNN that observes only the generated counterfactual images and aggregates slice level probabilities at the patient level.\\
+
+Experiment~2B focuses on \emph{encoder based latent inversion}. Three families of slice level features are considered: (i) convolutional features from a fine tuned ResNet-50 tumor classifier; (ii) latent codes produced by a supervised encoder that maps MRI slices into the latent space; and (iii) latent codes obtained from an e4e encoder, initially pre trained on FFHQ and fine tuned on the brain tumor dataset. Each representation is evaluated independently as input to a linear SVM, in order to assess whether StyleGAN-C latent embeddings provide complementary information to standard convolutional features.\\
+
+
+Experiment~2C evaluates \emph{StyleGAN-C as a data augmentation engine}. Here, the generator is trained only on the training split, and synthetic images are sampled to balance under represented tumor classes. A ResNet-50 ensemble is then trained under two conditions: a real only baseline and a GAN balanced configuration where synthetic MRIs are added until matching the majority class. In addition, controlled leakage scenarios are analyzed to quantify how training the generator on non-disjoint patient splits can artificially inflate test performance, highlighting the importance of strict patient-level separation in all augmentation experiments.\\
+
+
+Across these three subexperiments, the different configurations are compared primarily in terms of macro-averaged F1-score and overall accuracy on the test set. The most promising model is selected as the final tumor classification strategy adopted in this thesis.
+
+
+\newpage
+
+\section{Experiment 2A: Inference By Generation}
+\label{subsec:gated_ensemble_lpips_simple}
+
+
+\begin{figure}[H]
+\centering
+\resizebox{0.85\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.0cm and 1.3cm, >=Latex]
+
+\tikzset{
+  block/.style={
+    rectangle, rounded corners=1.6mm,
+    draw, thick, align=center,
+    minimum height=0.95cm, minimum width=3.2cm,
+    inner sep=3.5pt, font=\scriptsize
+  },
+  io/.style={
+    trapezium, trapezium left angle=70, trapezium right angle=110,
+    draw, thick, align=center,
+    minimum height=0.9cm, minimum width=3.2cm,
+    inner sep=3.5pt, font=\scriptsize
+  },
+  arrow/.style={->, thick},
+  dashedarrow/.style={->, thick, dashed},
+  dframe/.style={
+    draw=black, line width=0.9pt, densely dashed,
+    rounded corners=2mm, inner sep=7pt
+  }
+}
+
+% ==========================
+% Script 1 (fila superior)
+% ==========================
+\node[io] (ds) {Real test images $x$};
+\node[block, right=of ds] (proj) {Latent projection\\from real images};
+\node[block, right=of proj] (proto) {Prototypes\\per class ($W^+$)};
+
+\draw[arrow] (ds) -- (proj);
+\draw[arrow] (proj) -- (proto);
+
+% ==========================
+% Script 2 (columna central, centrada bajo proj)
+% ==========================
+\node[block, below=1.6cm of proj] (wreal) {Project real image\\to latent};
+\node[block, below=1.2cm of wreal] (pair) {Latent pairing\\(real, prototype)};
+\node[block, below=1.2cm of pair] (interp) {Latent interpolation};
+\node[io,    below=1.2cm of interp] (cfset) {Generated images\\per patient};
+
+% Conexión desde las imágenes reales (script 1) al script 2
+\draw[arrow] (ds.south) -- (wreal.west);
+
+\draw[arrow] (wreal) -- (pair);
+\draw[arrow] (pair) -- (interp);
+\draw[arrow] (interp) -- (cfset);
+
+% Dependencia entre scripts (prototipos -> pairing) en forma de L
+\draw[arrow] (proto.south) |- (pair.east);
+
+% ==========================
+% Rama de evaluación (debajo de cfset)
+% ==========================
+
+% LPIPS (izquierda)
+\node[block, below left=1.6cm and 1.2cm of cfset] (lpips) {LPIPS vs real image\\per generated slice};
+\node[io, below=0.9cm of lpips] (lpips_pred) {LPIPS-based\\class prediction};
+
+\draw[arrow] (cfset.south west) to[out=-150, in=90] (lpips.north);
+\draw[arrow] (lpips) -- (lpips_pred);
+
+% NUEVA LÍNEA: real test images -> LPIPS (para indicar la referencia real)
+\draw[dashedarrow] (ds.south) |- (lpips.west);
+
+% CNN (derecha)
+\node[block, below right=1.6cm and 1.2cm of cfset] (cnn_cf) {CNN classifier\\on generated images};
+\node[io, below=0.9cm of cnn_cf] (cnn_pred) {CNN-based\\class prediction};
+
+\draw[arrow] (cfset.south east) to[out=-30, in=90] (cnn_cf.north);
+\draw[arrow] (cnn_cf) -- (cnn_pred);
+
+% ==========================
+% Marcos punteados
+% ==========================
+\begin{scope}[on background layer]
+  \node[dframe, fit=(ds)(proj)(proto)] (frame1) {};
+  \node[dframe, fit=(wreal)(pair)(interp)(cfset)] (frame2) {};
+  \node[dframe, fit=(lpips)(lpips_pred)(cnn_cf)(cnn_pred)] (frame3) {};
+\end{scope}
+
+% Títulos de los marcos
+\node[font=\scriptsize, anchor=south] at (frame1.north) {Script 1: Prototype construction};
+\node[font=\scriptsize, anchor=south] at (frame2.north) {Script 2: Class-conditioned reconstruction};
+\node[font=\scriptsize, anchor=north] at (frame3.south) {Evaluation: LPIPS distances and CNN classification};
+
+\end{tikzpicture}%
+}
+\caption{Experiment~1 (Part~2): prototype construction (top), class-conditioned reconstruction (middle), and evaluation (bottom). The evaluation stage includes two branches: LPIPS-based comparison between each generated image and its real counterpart, and CNN-based classification over the generated images per patient.}
+\label{fig:exp1_part2_two_scripts_extended}
+\end{figure}
+
+
+\subsection{CNN classifier on generated counterfactuals}
+\label{subsec:cnn_counterfactuals}
+
+The CNN component is based on a ResNet-50 architecture whose final fully connected layer is adapted to the three tumor classes. The network is first trained on real MRI slices under the reduced dataset configuration described in Experiment~2C (truncation $\psi = 1.3$), and the resulting checkpoint is reused as a frozen classifier in the present experiment.
+
+At inference time, the classifier operates on StyleGAN-C counterfactuals. For each patient, the method receives a set of class conditioned generated images produced by the latent interpolation procedure. The ResNet-50, which outputs a class-probability vector
+\[
+\mathbf{p}^{\text{cnn}}_{p,c,f} \in \mathbb{R}^C
+\]
+for the slice associated with patient $p$, target class $c$ and frame index $f$.
+
+To obtain a patient level prediction, slice level probabilities are combined using predefined frame and class weights. Let $w^{\text{frame}}_f$ denote the weight associated with frame $f$ along the counterfactual trajectory and $w^{\text{class}}_c$ the weight associated with target class $c$. The total weight for a generated slice is defined as
+\[
+w_{c,f} = w^{\text{class}}_c \, w^{\text{frame}}_f,
+\]
+and the aggregated CNN probability vector for patient $p$ is given by
+\[
+\bar{\mathbf{p}}^{\text{cnn}}_p
+=
+\frac{1}{Z_p}
+\sum_{c=1}^{C}
+\sum_{f} w_{c,f} \, \mathbf{p}^{\text{cnn}}_{p,c,f},
+\qquad
+Z_p = \sum_{c=1}^{C} \sum_{f} w_{c,f}.
+\]
+The CNN-based patient level prediction is then obtained by
+\[
+\hat{y}^{\text{cnn}}_p = \arg\max_{c} \bar{p}^{\text{cnn}}_{p,c},
+\]
+providing a purely discriminative baseline that operates exclusively on the generated counterfactual images.
+
+
+
+
+\subsection{LPIPS inference by generation.}
+
+In parallel, the framework performs inference by generation using LPIPS as a perceptual similarity measure. For each real slice of a patient and each class, the method computes the LPIPS distance between the real image and its corresponding class conditional reconstruction. These distances are aggregated per class and per patient into a vector where smaller values indicate better reconstructions for that class.\\
+
+Because LPIPS distances are not probabilities and live on a small numeric range, they are converted into a probability distribution in two steps: (i) a per-patient min-max normalization is applied to map distances to $[0,1]$, and (ii) a temperature-scaled softmax is applied over the negated distances:
+\[
+\bar{\mathbf{p}}^{\text{lpips}}_p
+=
+\text{softmax}\!\left(- \frac{\mathbf{D}'_p}{T_{\text{lpips}}}\right),
+\]
+where $\mathbf{D}'_p$ is the normalized distance vector and $T_{\text{lpips}}>0$ is a temperature hyperparameter controlling how peaked the distribution is. The LPIPS prediction is then given by
+\[
+\hat{y}^{\text{lpips}}_p = \arg\max_{c} \bar{p}^{\text{lpips}}_{p,c}.
+\]
+
+\subsubsection{Class-conditional counterfactual videos as visual explanations}
+
+In addition to the quantitative evaluation based on CNN predictions, the proposed pipeline also produces class conditional counterfactual \emph{videos} that can be inspected by human experts as an explainability artefact. For each test patient, a representative MRI slice is first projected into the latent space of the StyleGAN-C generator, obtaining a latent code $\mathbf{w}_{\text{real}}$. Then, for every tumor class $y \in \{\text{glioma}, \text{meningioma}, \text{pituitary}\}$, a pair $(\mathbf{w}_{\text{real}}, \mathbf{w}_{\text{proto}}^{(y)})$ is constructed and a smooth interpolation in latent space is generated between the real code and the corresponding class prototype $\mathbf{w}_{\text{proto}}^{(y)}$. Each interpolation is rendered as a short video, with one frame per latent step.\\
+
+These videos show how the image would gradually deform if it were forced to move towards each tumor class manifold according to the generator. From an XAI perspective, this provides an intuitive and clinically meaningful way to inspect the model's implicit representation of each class, turning the generative model into an interactive explanation tool rather than a purely black-box augmentation mechanism.
+
+\clearpage
+
+
+\section{Experiment 2B: Encoder based Latent Inversion}
+\label{sec:exp2B_method}
+
+\begin{figure}[ht]
+\centering
+\resizebox{1\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.0cm and 1.4cm, >=Latex]
+
+\tikzset{
+  block/.style={
+    rectangle, rounded corners=1.6mm,
+    draw, thick, align=center,
+    minimum height=0.9cm, minimum width=3.1cm,
+    inner sep=3pt, font=\scriptsize
+  },
+  arrow/.style={->, thick},
+  dashedarrow/.style={->, thick, dashed},
+  dframe/.style={draw, thick, densely dashed, rounded corners=2mm, inner sep=6pt}
+}
+
+% =========================================================
+% Row 1: CNN feature extraction -> classification
+% =========================================================
+\node[block] (x1)   {MRI slices $x$};
+\node[block, right=of x1] (cnn)  {Frozen tumor CNN};
+\node[block, right=of cnn] (fcnn) {Features $F_{\mathrm{cnn}}$};
+\node[block, right=of fcnn] (ycnn) {CNN\\SVM prediction};
+
+\draw[arrow] (x1) -- (cnn);
+\draw[arrow] (cnn) -- (fcnn);
+\draw[arrow] (fcnn) -- (ycnn);
+
+% =========================================================
+% Row 2: Supervised encoder -> classification
+% =========================================================
+\node[block, below=2.6cm of x1] (x3)   {MRI slices $x$};
+\node[block, right=of x3] (enc)  {Supervised encoder\\(ResNet-50)};
+\node[block, right=of enc] (fenc) {Features $F_{\mathrm{enc}}$};
+\node[block, right=of fenc] (yenc) {Encoder\\SVM prediction};
+
+\draw[arrow] (x3) -- (enc);
+\draw[arrow] (enc) -- (fenc);
+\draw[arrow] (fenc) -- (yenc);
+
+% =========================================================
+% Row 3: e4e encoder -> classification
+% =========================================================
+\node[block, below=2.6cm of x3] (x4)   {MRI slices $x$};
+\node[block, right=of x4] (e4e)  {StyleGAN encoder\\(e4e)};
+\node[block, right=of e4e] (fw) {Latent features $F_{w}$};
+\node[block, right=of fw] (yw) {e4e\\SVM prediction};
+
+\draw[arrow] (x4) -- (e4e);
+\draw[arrow] (e4e) -- (fw);
+\draw[arrow] (fw) -- (yw);
+
+% =========================================================
+% Dotted frames + labels
+% =========================================================
+\begin{scope}[on background layer]
+  \node[dframe, fit=(x1)(cnn)(fcnn)(ycnn)] (frameCNN) {};
+  \node[dframe, fit=(x3)(enc)(fenc)(yenc)] (frameENC) {};
+  \node[dframe, fit=(x4)(e4e)(fw)(yw)] (frameE4E) {};
+\end{scope}
+
+\node[font=\scriptsize, anchor=south] at (frameCNN.north)
+{Row 1: CNN feature extraction and SVM classification};
+\node[font=\scriptsize, anchor=south] at (frameENC.north)
+{Row 2: Supervised encoder feature extraction and SVM classification};
+\node[font=\scriptsize, anchor=south] at (frameE4E.north)
+{Row 3: StyleGAN e4e latent features and SVM classification};
+
+\end{tikzpicture}%
+}
+\caption{Experiment~2B: comparison between CNN-based features, supervised encoder features, and StyleGAN e4e latent features, each evaluated with a linear SVM.}
+\label{fig:exp2b_two_rows_cnn_encoder}
+\end{figure}
+
+
+The objective of this experiment is to investigate whether extracting deep features from a pre trained encoder with StyleGAN enables accurate classification. To this end, three configurations are compared:
+
+\begin{enumerate}
+    \item \textbf{CNN deep features}: A shallow classifier trained on deep features extracted from a tumor CNN (ResNet-50 backbone).
+    \item \textbf{Encoder}: A shallow classifier trained only on embeddings produced by a supervised CNN encoder.
+    \item \textbf{E4E}: A shallow classifier trained using features extracted by the E4E encoder, which is pre trained on StyleGAN.
+\end{enumerate}
+
+All feature extractors were trained exclusively on the training pool described in dataset section, which follows a no leak by patient protocol. Evaluation of the shallow classifiers (SVMs) used patient-wise splits, as detailed below.
+
+
+\subsection{Supervised Encoder with E4E}
+
+The encoder used in this study was the E4E encoder, which had been pre-trained on StyleGAN2-FFHQ. The encoder was fine tuned on the tumor dataset to adapt it to the specific features of tumor images. The pre trained weights from the model \texttt{stylegan2-ffhq-config-f.pt} were utilized for this fine tuning process.\\
+
+After the fine tuning, the encoder was used to extract the features from the tumor images. The images were passed through the encoder, which projected them into the latent space \( W^+ \) of StyleGAN. The extracted features, representing each image in a compact latent space, provided high dimensional embeddings that encapsulated key visual information necessary for tumor classification. These embeddings were subsequently used for further analysis and classification tasks.
+
+
+\subsection{Supervised Encoder}
+
+The supervised encoder was implemented as a ResNet-18 backbone with a low dimensional embedding head:
+
+\begin{itemize}
+    \item The original fully connected layer of ResNet-18 was replaced by an identity mapping, exposing the global average pooling output.
+    \item A linear layer projected this representation to a \textbf{512 dimensional} embedding.
+    \item The embedding was $\ell_2$-normalized along the feature dimension to enforce unit length.
+\end{itemize}
+
+\subsection{Tumor CNN Feature Extraction}
+
+In parallel, a ResNet-50 classifier was fine tuned on the same training pool. The architecture consisted of:
+
+\begin{itemize}
+    \item A ResNet-50 backbone up to the global average pooling layer.
+    \item A fully connected classification layer mapping the 2048 dimensional backbone output to three logits.
+\end{itemize}
+
+For feature extraction, the classification head was retained but not used; instead, the activations from the penultimate layer (global average pooling output) were taken as the CNN feature vector. These activations were used as a high dimensional feature representation of the images, capturing relevant information for classification tasks.
+
+
+
+\subsection{Classifier}
+
+For the classification task, a Support Vector Classifier (SVC) with a linear kernel was employed to classify the extracted features. The features for classification were obtained from three different sources: deep features extracted from a CNN, embeddings produced by the e4e encoder, and features from a supervised encoder. These feature sets were first loaded from multiple NPZ files, each containing the corresponding features along with image paths, labels, and class information. The features were then aligned by matching the image paths across the different datasets to ensure consistency and avoid any misalignment between training and test data.\\
+
+Once the features were aligned, they were standardized using a \textit{StandardScaler}, which normalized the features by ensuring zero mean and unit variance. The SVC classifier was trained on the standardized training data using a linear kernel, and it was tasked with predicting the tumor class. The model was trained separately on the features extracted from each of the sources (CNN, e4e, and encoder), and each feature set was evaluated independently.
+
+
+
+\subsection{Latent Structure Analysis via PCA}
+
+The latent structure of the three learned representations was analyzed using Principal Component Analysis (PCA) and three dimensional visualization. For each feature type (CNN feature bank, supervised encoder feature bank, and e4e W\textsuperscript{+} feature bank), a PCA model was fitted on the training and testing features, and all samples were projected onto the first three principal components. The resulting low-dimensional embeddings were visualized as 3D scatter plots, color coded by tumor class and split (training vs.\ test), allowing both sets to be inspected in a common space.\\
+
+Class centroids were overlaid as larger markers in the PCA space in order to inspect cluster separation and overlap across the three representations. In addition, the explained variance ratios of the leading components were recorded, providing qualitative insight into how well each representation disentangled the tumor classes and whether any of the three feature spaces led to a clearer separation in latent space. By jointly visualizing training and test samples, the analysis also enabled a qualitative assessment of potential domain shift between the two splits: similar distributions in PCA space were interpreted as evidence that the test set was drawn from the same underlying distribution as the training data.
+
+
+\clearpage
+\section{Experiment 2C: Synthetic Augmentation}
+
+\label{sec:exp2c}
+
+
+\begin{figure}[ht]
+\centering
+\resizebox{0.97\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.0cm and 1.3cm, >=Latex]
+
+\tikzset{
+  block/.style={
+    rectangle, rounded corners=1.6mm,
+    draw, thick, align=center,
+    minimum height=0.9cm, minimum width=3.0cm,
+    inner sep=3pt, font=\scriptsize
+  },
+  arrow/.style={->, thick},
+  dashedarrow/.style={->, thick, dashed},
+  dframe/.style={draw, thick, densely dashed, rounded corners=2mm, inner sep=6pt}
+}
+
+% ==========================
+% Top row (left -> right): GAN augmentation
+% ==========================
+\node[block] (real) {Real images\\Training Pool};
+\node[block, right=of real] (gan) {StyleGAN-C\\generator};
+\node[block, right=of gan] (synth) {Synthetic images\\per class};
+\node[block, right=of synth] (bal) {Class balancing\\real + synthetic};
+
+\draw[arrow] (real) -- (gan);
+\draw[arrow] (gan) -- (synth);
+\draw[arrow] (synth) -- (bal);
+
+% ==========================
+% Bottom row (right -> left): CNN training/evaluation
+% (order: training -> sweep -> select -> prediction)
+% ==========================
+\node[block, below=1.6cm of bal] (train) {CNN K-Fold\\training};
+\node[block, left=of train] (psi) {Prediction on\\ Test};
+\node[block, left=of psi] (select) {
+Sweep truncation\\$\psi$};
+\node[block, left=of select] (pred) {Select best\\model};
+
+\draw[arrow] (train) -- (psi);
+\draw[arrow] (psi) -- (select);
+\draw[arrow] (select) -- (pred);
+
+% Wrap-down arrow
+\draw[dashedarrow] (bal.south) to[out=-90, in=90, looseness=0.9] (train.north);
+
+% Frames + labels
+\begin{scope}[on background layer]
+  \node[dframe, fit=(real)(gan)(synth)(bal)] (frameGen) {};
+  \node[dframe, fit=(train)(psi)(select)(pred)] (frameCNN) {};
+\end{scope}
+
+\node[font=\scriptsize, anchor=south] at (frameGen.north)
+{Synthetic augmentation and balancing};
+
+\node[font=\scriptsize, anchor=south] at (frameCNN.north)
+{CNN retraining and evaluation};
+
+\end{tikzpicture}%
+}
+\caption{Experiment 2C workflow: StyleGAN-C generates class-balanced synthetic images that augment the Training Pool. The CNN is retrained with K-Fold under multiple truncation settings, the best model is selected, and performance is evaluated on the real Test set.}
+\label{fig:exp2c_workflow}
+\end{figure}
+
+
+
+The objective of this experiment \footnote{This experiment is executed twice: once using the complete dataset and once using the reduced. In each case, the conditional StyleGAN-C generator is retrained on the corresponding training split, ensuring that both the classifier and the generative model are matched to the underlying data distribution.} is to determine whether augmenting the training set with class conditional synthetic MRIs generated by StyleGAN-C improves brain tumor classification performance compared to training the classifier on real images alone. To this end, models trained with and without synthetic data are evaluated under strict patient wise data splits and an independent test set, and their macro averaged F1-score are compared.
+
+
+\subsection{Proposed CNN}
+
+A pre-trained ResNet-50 \cite{he2015deepresiduallearningimage} model is proposed for the classification of brain tumors. The training process involves the following steps:
+
+\begin{enumerate}
+    \item \textbf{Initial Training (15 epochs with real and synthetic images)} \\
+    The model is first trained for 15 epochs using a combination of real MRI images and synthetic images (if available). During this phase, fine-tuning is applied to all layers of the model, allowing it to learn features from both the pre-trained ImageNet weights and the new MRI images. This helps the model to adapt to the specific characteristics of the brain tumor images, benefiting from the pre-trained knowledge while also learning the domain-specific features.
+
+    \item \textbf{Fine-tuning with Real Images Only (5 epochs)} \\
+    After the initial 15 epochs, the model undergoes fine-tuning for an additional 5 epochs, using only real MRI images from the training set. During this phase, all layers of the model are adjusted to better adapt to the real tumor images, ensuring the model’s performance is optimized for classifying brain tumors.
+
+    \item \textbf{Adjustment of the Final Fully Connected (FC) Layer} \\
+    Finally, the last fully connected (FC) layer, originally designed to output 1000 classes for ImageNet classification, is modified to output 3 classes. This adjustment allows the model to produce outputs specific to the brain tumor problem, ensuring it can classify MRI images according to the target tumor types (e.g., meningioma, pituitary, glioma).
+\end{enumerate}
+
+This approach enables the model to utilize the pre-trained ImageNet features while also fine-tuning the network to specialize in the classification of brain tumors.
+
+
+
+
+\subsection{Baseline: Real images CNN}
+Each image is preprocessed as a $256\times256$ single channel slice replicated into three channels to match the ImageNet pretrained backbone. Unless stated otherwise, training uses a single random seed and performance is estimated with $K$-fold cross validation, which reduces sensitivity to random initialization and batching effects.\\
+
+In addition to the cross validated baseline, a single full train model is fitted on the entire training partition (all available training patients) using the same architecture and optimization settings. Its test performance is reported as a point baseline, providing a deterministic reference to compare against the ensemble and augmented configurations considered in Experiment~2C.\\
+
+Furthermore, after the initial training phase, a fine-tuning process is performed on the model using only real images to better adapt the classifier to the specific characteristics of real MRI data. Fine-tuning is conducted for five epochs (\texttt{fine\_tune\_real\_epochs=5}), ensuring that the model continues to leverage the pre-trained weights while refining its performance on real tumor scans. This step enhances the model’s ability to generalize and optimizes its performance specifically for the target classification task.
+
+
+
+\subsection{Augmented variant: Real + StyleGAN-C}
+
+The augmented configuration preserves the same network architecture and preprocessing pipeline; the only modification lies in the composition of the training set. In this variant, a StyleGAN-C generator is integrated. First, a fixed pool of synthetic MRIs per class is generated by sampling latent codes $z$ together with class conditioning vectors. Synthetic images are then preprocessed in exactly the same way as real images.\\
+
+For each cross-validation fold, a \emph{balanced} training subset is constructed by mixing real and synthetic images as follows. Let $n_c^{\text{real},(k)}$ denote the number of real training images of class $c$ in fold $k$, and let
+\[
+n_{\text{target}}^{(k)} = \max_c n_c^{\text{real},(k)}
+\]
+be the size of the largest real class in that fold. For each class $c$, a deficit is computed as
+\[
+d_c^{(k)} = n_{\text{target}}^{(k)} - n_c^{\text{real},(k)}.
+\]
+If $d_c^{(k)} > 0$, then $d_c^{(k)}$ synthetic images of class $c$ are randomly sampled from the pre generated pool and added to the training subset. This procedure yields, for each fold, a training set in which every class has approximately $n_{\text{target}}^{(k)}$ samples when counting real and synthetic images together. Validation and test sets remain strictly real and are never augmented with synthetic images.
+
+
+
+
+\subsection{Evaluation protocol}
+For each fold $k$, the model is trained for a fixed number of epochs. At the end of every epoch, validation metrics are computed and the checkpoint with the highest macro-averaged F1-score on the validation set is retained as the ``best'' model for that fold. Using this best checkpoint, the following steps are carried out:
+\begin{enumerate}
+    \item validation accuracy and macro/weighted Precision, Recall, and F1-score are reported for fold $k$;
+    \item predictions are obtained on the test set $\mathcal{D}_{\text{test}}$ (using only real images).
+\end{enumerate}
+
+In addition, a \emph{$K$-fold ensemble} is formed on the test set by averaging per-class probabilities across the $K$ best-fold models:
+\[
+\hat{p}(y \mid x) = \frac{1}{K} \sum_{k=1}^K p^{(k)}(y \mid x),
+\]
+
+
+
+
+
+
+\subsection{Ablations}
+
+Three complementary ablation studies are conducted, each testing a specific hypothesis:
+\begin{itemize}
+    \item \textbf{Ablation~1 (CAS):} Tests whether the synthetic images alone contain sufficient class-discriminative information to train a classifier, independently of real data.
+    \item \textbf{Ablation~2 (Oversampling):} Tests whether the observed accuracy improvement is due to class balancing alone or to the additional variability introduced by the generator.
+    \item \textbf{Ablation~3 (Augmentation strength):} Tests whether the benefit of GAN augmentation persists when compared to strong geometric augmentation on real data.
+\end{itemize}
+
+First, \textbf{Ablation~1 (CAS)} evaluates the quality and discriminative utility of StyleGAN-C samples by feeding only generated images to a frozen CNN trained on real data, thus measuring how well synthetic images support classification on their own. Second and third, \textbf{Ablation~2} and \textbf{Ablation~3} compare the effect of class balancing under different image sources and transformation regimes, contrasting real only oversampling and classical augmentation against balanced augmentation with StyleGAN-C. Together, these studies disentangle whether performance gains stem primarily from class rebalancing, from stronger transformations on real data, or from the additional variability introduced by synthetic images.
+
+
+
+
+\subsubsection{Ablation 1: CAS}
+The \textit{Classification Accuracy Score} (CAS) quantifies, in isolation, how useful synthetic images are for a fixed discriminative model trained on real data. A frozen CNN is evaluated exclusively on samples generated by StyleGAN-C. CAS thus reflects the discriminative utility of the generated data and enables controlled studies of how truncation \(\psi\) and the number of images per class \(N\) affect downstream classification.\\
+
+For each configuration \((N,\psi)\), the pipeline generates \(N\) images per class, assembles a balanced test with only synthetic images, and computes \(\text{Accuracy (CAS)}\) with the frozen CNN. The process is repeated over a grid of \((N,\psi)\). High CAS indicates that synthetic images preserve clinically relevant patterns consistent with class labels, while systematic CAS trends across \(\psi\) and \(N\) guide the selection of generator settings and help diagnose issues such as mode dropping or artifact-induced biases.
+
+\subsubsection{Ablation 2: Naive Oversampling}
+
+To isolate the effect of class balancing from the specific contribution of synthesized images, this ablation compares a baseline with naive oversampling against a GAN-balanced configuration. In both settings, the same ResNet-50 backbone and K-fold by patient are used, ensuring identical train/validation partitions across conditions. In the \emph{naive oversampling} regime, only real MRI slices are used and minority classes are duplicated with replacement until matching the number of samples of the largest real class within each fold. Any performance difference between these two regimes can therefore be attributed to the additional variability introduced by synthetic augmentation, rather than to class rebalancing itself.
+
+
+\subsubsection{Ablation 3: Effect of Augmentation Strength}
+
+This ablation complements Ablation~2 by keeping the class balancing strategy fixed to a real images oversampling regime and varying only the strength of classical data augmentation. In this way, it isolates the impact of stronger transformations on the baseline and helps disentangle how much of the performance gain observed in GAN balanced settings could in principle be recovered by applying more aggressive augmentations to real images, without introducing any synthetic data.
+
+Two augmentation regimes are compared:
+
+\begin{itemize}
+    \item \textbf{Weak augmentation (baseline).} The weak regime applies only mild geometric transformations, namely a random resized crop with scale in $[0.9, 1.0]$ and aspect ratio in $[0.95, 1.05]$, random horizontal and vertical flips, and small random rotations of up to $\pm 10^\circ$. This setting is intended to introduce limited variability while preserving the anatomical structure of the tumor and surrounding tissue.
+
+    \item \textbf{Strong augmentation.} The strong regime extends the previous transformations with more aggressive perturbations. In addition to flips and rotations of up to $\pm 15^\circ$, it employs a random resized crop with scale in $[0.7, 1.0]$ and aspect ratio in $[0.9, 1.1]$, brightness and contrast jitter, small affine translations and shear, and a mild Gaussian blur. These operations substantially enlarge the space of observed appearances, at the risk of introducing less realistic image configurations.
+
+
+
+\end{itemize}
+
+For each regime, a full $K$-fold cross-validation is run on the same patient level splits. By keeping all other factors fixed, this comparison quantifies whether stronger classical augmentation alone can explain the observed improvements, or whether additional gains provided by StyleGAN-C augmentation go beyond what can be achieved with only transformations.
+
+
+\subsection{Statistical Comparison of Slice-Level Models}
+\label{subsec:stat_tests_slice_level}
+
+To assess whether the differences between two competing models were statistically meaningful, a set of paired tests was applied at the MRI slice level. In all cases, the comparison was restricted to the intersection of slices for which both models produced valid outputs. Slices that were present in only one of the models were discarded, ensuring a strict pairing of cases.Two complementary analyses were carried out: (i) a McNemar test on discrete slice level predictions, and (ii) a paired permutation test on slice level negative log-likelihood (NLL) derived from the predicted class probabilities. Both tests were two-sided, and results were interpreted at a significance level of $\alpha = 0.05$.\\
+
+
+The McNemar test was used to compare the \emph{classification decisions} of two models $A$ and $B$ on the same slices. For each model, a prediction file in \texttt{.csv} format was provided, containing: \texttt{path} (unique slice identifier), \texttt{true} (ground-truth class label) and \texttt{pred} (predicted label). After loading both tables, they were merged by \texttt{path}, and a sanity check ensured that the ground truth labels coincided for every paired slice. From this merged table, each slice was classified into four possible outcomes: both models correct, both models incorrect, only model $A$ correct, or only model $B$ correct. The McNemar test focuses on the \emph{discordant} pairs (slices where exactly one of the two models is correct). Using these counts, a chi-square statistic with continuity correction was computed, together with its associated $p$-value.\\
+
+
+To exploit the full probabilistic output of the models, a second analysis was performed on slice level negative log-likelihood (NLL). In this case, each prediction file contained, in addition to \texttt{path}, \texttt{patient\_id}, \texttt{true} and \texttt{pred}, one probability column per class. For each slice and each model, the probability assigned to the true class was extracted. The slice level NLL was then computed as the negative logarithm of this probability. The two NLL values (one per model) were merged into a single paired table using \texttt{path}, \texttt{patient\_id} and \texttt{true} as keys. The comparison between models was carried out using a paired permutation test. The null hypothesis assumes that there is no systematic advantage of one model over the other; under this assumption, randomly swapping the NLL values between models within each slice should not change the distribution of average differences.\\
+
+\clearpage
+\section{Experiment 3: Classifier Evaluation}
+
+In this experiment, one expert neuroradiologist participated by completing a series of structured surveys designed to evaluate the generated MRI images. The aim is to collect both qualitative feedback and quantitative ratings on diagnostic quality, realism, and clinical utility, in order to assess how well the model is able to produce images that are useful for clinical decision making.
+
+
+
+\subsection{Human In the Loop}
+
+To evaluate the quality of the images generated by the StyleGAN-C model, two approaches were used with the expert neuroradiologist: a qualitative assessment, where experts provided feedback on the realism and clinical utility of the images, and a quantitative evaluation, where they judged whether the generated images preserved anatomical structures and tumors realistically, and if they could distinguish real from generated images with a fixed truncation for model retraining.
+
+% Preamble:
+% \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds}
+
+\begin{figure}[H]
+\centering
+\resizebox{1\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.0cm and 1.3cm, >=Latex]
+
+\tikzset{
+  block/.style={
+    rectangle, rounded corners=1.6mm,
+    draw, thick, align=center,
+    minimum height=0.9cm, minimum width=3.2cm,
+    inner sep=3pt, font=\scriptsize
+  },
+  decision/.style={
+    diamond, draw, thick, aspect=2,
+    align=center, inner sep=1pt, font=\scriptsize
+  },
+  arrow/.style={->, thick},
+  dashedarrow/.style={->, thick, dashed},
+  dframe/.style={draw, thick, densely dashed, rounded corners=2mm, inner sep=6pt}
+}
+
+% ==========================
+% Top row (left -> right): Expert evaluation
+% ==========================
+\node[block] (pool) {Generated image pool\\(per class)};
+\node[block, right=of pool] (form) {Expert form\\Realism / Utility};
+\node[block, right=of form] (res) {Aggregated results\\scores \& comments};
+
+\draw[arrow] (pool) -- (form);
+\draw[arrow] (form) -- (res);
+
+% ==========================
+% Bottom row: Decision + loop
+%   (SWAPPED: retrain on left, keep on right)
+% ==========================
+\node[decision, below=1.7cm of res] (dec) {Retrain\\generator?};
+
+\node[block, left=2.2cm of dec] (retrain) {Retrain / fine-tune\\$G/D$ with feedback};
+\node[block, right=2.2cm of dec] (keep) {Keep current\\generator};
+
+% Arrows from results to decision (wrap-down)
+\draw[arrow] (res.south) to[out=-90, in=90, looseness=0.9] (dec.north);
+
+% Decision branches (labels updated)
+\draw[arrow] (dec.west) -- node[above]{Yes} (retrain.east);
+\draw[arrow] (dec.east) -- node[above]{No}  (keep.west);
+
+% Loop back to new pool
+\draw[arrow] (retrain.west) -| (pool.south);
+
+% ==========================
+% Dotted frames + labels
+% ==========================
+\begin{scope}[on background layer]
+  \node[dframe, fit=(pool)(form)(res)] (frameTop) {};
+  \node[dframe, fit=(dec)(keep)(retrain)] (frameBot) {};
+\end{scope}
+
+\node[font=\scriptsize, anchor=south] at (frameTop.north)
+{Human-in-the-Loop evaluation};
+
+\node[font=\scriptsize, anchor=south] at (frameBot.north)
+{Decision and feedback loop};
+
+\end{tikzpicture}%
+}
+\caption{Human-in-the-Loop workflow: experts rate a pool of generated images in terms of realism and clinical utility. Aggregated results determine whether to retrain the generator with feedback or keep the current model.}
+\label{fig:hitl_workflow}
+\end{figure}
+
+
+
+\subsubsection{Quantitative}
+
+The expert neuroradiologists will be asked to provide their opinions on the generated images, specifically regarding their realism and clinical acceptability. This feedback will help guide the retraining of the model by adjusting the preprocessing techniques used to generate the images.
+
+\subsubsection{Qualitative}
+
+To assess the perceptual realism and clinical usefulness of the generated MRIs, a structured survey form is implemented. The first survey is designed to evaluate whether the generated images preserve critical anatomical structures, including tumors, and whether they are perceived as realistic. Additionally, the neuroradiologists are asked whether they can distinguish between real and generated images when the generator is operated at a fixed truncation value. The collected responses serve to determine whether the generated images retain sufficient diagnostic relevance and can be considered suitable for supporting automated classification tasks.
+
+
+\paragraph{Form~A: Realism \& Diagnostic Utility}
+A single sheet instrument presents a randomized grid of images comprising 50\% real test MRIs and 50\% generated StyleGAN-C images, interleaved uniformly and without labels. For each image, specialists record:
+\begin{enumerate}[leftmargin=*, itemsep=2pt]
+  \item \textbf{Real/Fake judgment}: binary decision (Real or Generated).
+  \item \textbf{Confidence (1--5)}: perceived certainty about the judgment (1{=}very low, 5{=}very high).
+  \item \textbf{Diagnostic utility (1--5)}: usefulness for clinical interpretation (1{=}not useful, 5{=}highly useful).
+\end{enumerate}
+This design quantifies the \emph{fooling rate} (fraction of fakes judged real), joint realism/confidence characteristics, and whether generated images preserve salient diagnostic attributes as reflected in utility scores. The sample is stratified so that all three tumor classes are equally represented. 
+
+
+\subsection{Grad-CAM XAI Evaluation}
+Grad-CAM is introduced as a post-hoc explainability tool to help interpret the model’s decision making process. Grad-CAM is applied to the generated MRI images to produce visual heatmaps that highlight the areas the model focuses on when making predictions. The purpose of using Grad-CAM is not to directly improve the classifier’s performance but to enhance the interpretability of the model's behavior. By visualizing which regions of the MRI scans are most important for the model’s classification, Grad-CAM provides insights into whether the model is focusing on relevant anatomical structures or potentially learning spurious correlations.
+
+To complement the quantitative evaluation of the CNN classifier in Experiment~2C, Grad-CAM is employed to obtain visual evidence of how the model arrives at its decisions.
+
+\paragraph{Form B: Evaluation of Grad-CAM’s Utility for Medical Professionals} 
+In this final survey, the neuroradiologists are asked to assess whether Grad-CAM helps them interpret and trust the model’s predictions. The survey is same as A and focuses on the following aspects:
+\begin{itemize}
+    \item Does Grad-CAM help identify the regions of the image that are most important for accurate diagnosis?
+    \item Does the visual feedback from Grad-CAM increase the medical professionals' confidence in the model's classifications?
+\end{itemize}
+
+A form is generated with pairs of images: one showing the Grad-CAM heatmap and the other showing the same image without the XAI overlay. This allows the experts to compare the visual feedback provided by Grad-CAM with the original images. This evaluation aims to determine if Grad-CAM can serve as an effective tool for improving the explainability and trustworthiness of automated tumor classification systems in a clinical setting.
+

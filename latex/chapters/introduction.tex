@@ -1,0 +1,181 @@
+\chapter{Introduction}
+
+This chapter presents the context and motivation of the study, along with the research questions, working hypotheses, and general objectives. It also outlines the overall strategy and methodology, describing how the proposed components are interconnected. Finally, it previews the main contributions and offers a road map for the remainder of the thesis within its scientific and clinical context. This thesis focuses on integrating class conditional MRI generation with classifier training under strict patient level data leakage control.
+
+\section{Background and Motivation}
+
+Brain tumors constitute a major neurological burden due to their high morbidity, mortality, and long-term functional impact. Early and reliable diagnosis is crucial for treatment planning, surgical decision-making, and follow-up, as prognosis and therapeutic strategies strongly depend on tumor type \cite{Vadhavekar2024AdvancementsImagingNeurosurgical}. Magnetic Resonance Imaging (MRI) is the primary non-invasive modality for brain tumor assessment because of its high soft-tissue contrast and multiplanar characterization capabilities. Nevertheless, clinical interpretation remains time consuming and subject to inter observer variability, particularly when tumors exhibit subtle borders, heterogeneous appearance, or overlap in radiological patterns across classes.\\
+
+In recent years, deep learning methods especially Convolutional Neural Networks (CNNs) \cite{hayat2024cnnsvm} have shown strong performance in brain tumor recognition from MRI slices. These models can learn discriminative features directly from images, often reaching high accuracy on public benchmarks. However, most existing approaches are purely discriminative and provide limited interpretability, offering clinicians little evidence beyond a predicted label. In high stakes medical settings, such opacity can reduce trust and hinder adoption, particularly when automated predictions conflict with clinical judgment.\\
+
+A second critical limitation in this field is the scarcity and limited diversity of public MRI datasets. Many studies rely on a small number of widely reused cohorts. As a result, models may overfit dataset specific characteristics and exhibit substantial performance drops under domain shift, when deployed on images from different hospitals, scanners, or acquisition settings. In addition, progress is further constrained by the lack of publicly available datasets with reliable patient level annotation. Most resources do not provide detailed per-patient metadata and are reused extensively without clear documentation of how patients are split across partitions. This leads to a common methodological flaw: data leakage, whereby MRI slices from the same patient appear in both training and test sets. Because a single patient may contribute multiple highly correlated slices across axial, sagittal, and coronal planes, models can learn to recognize patient-specific anatomical features rather than tumor-specific characteristics, leading to artificially inflated accuracy. This thesis enforces strict patient-disjoint partitions throughout all experiments to prevent this form of leakage. Such leakage inflates performance metrics and undermines the clinical validity of the reported results, making rigorous patient-level separation and explicit duplicate control essential to obtain generalizable and trustworthy conclusions.\\
+
+
+
+Generative models offer a promising avenue to address these challenges. Among them, StyleGAN-based architectures provide notable advantages over traditional GANs due to their disentangled latent space ($\mathcal{W}$) \cite{karras2019stylebasedgeneratorarchitecturegenerative}, which enables controlled semantic manipulation and high quality image reconstruction. These properties are particularly beneficial for inference by generation approaches, where a query image is inverted into latent space and compared to class conditional reconstructions to provide structural evidence for classification. \\
+
+
+In addition, StyleGAN models can be leveraged to augment limited training datasets, potentially enhancing robustness under patient level evaluation. However, for these models to gain clinical acceptance, their outputs must be validated not only through automated metrics but also via expert human in the loop (HITL) assessment, focusing on both realism and diagnostic utility. In this work, \textbf{StyleGAN-C} denotes a class conditional extension of StyleGAN2-ADA, adapted for brain tumor MRI synthesis. The model incorporates class specific embeddings and includes minor architectural refinements to better align with clinical plausibility standards in medical imaging. Compared to alternative generative frameworks such as diffusion models or variational autoencoders (VAEs), StyleGAN-C is preferred due to its structured latent spaces ($\mathcal{W}/\mathcal{W}^+$), which support rapid class-conditional inversion and enable semantically meaningful image manipulation, as well as its StyleGAN2-ADA backbone, which offers a favorable trade-off between training speed, sample quality, and computational cost \cite{abdullah2025computationallyefficientdiffusionmodels}.
+These properties are critical for realistic class-conditional MRI image generation, the inference by generation proposed strategy, and the counterfactual explainability mechanisms proposed in this thesis.\\
+
+Motivated by these gaps, this thesis proposes an explainable brain tumor classification framework composed of three integrated components: (i) generation of clinically validated class-conditional MRI images using StyleGAN-C, (ii) a classification strategy that uses StyleGAN-C to classify brain tumor MRI images, and (iii) an image-based XAI module that enables clinicians to interpret model predictions in a clinically meaningful way.\\
+
+
+
+\section{Research Questions}
+\begin{enumerate}
+    \item \textbf{Generative validity:} 
+       Do class conditional MRI images generated by StyleGAN-C reach clinically acceptable levels of realism and diagnostic utility, as determined by neuroradiologist HITL ratings using structured Likert-style forms?
+
+
+    \item \textbf{Impact of StyleGAN-C on classification methods:} 
+    How does incorporating StyleGAN-C affect brain tumor MRI classification when used through 
+    (i) inference-by-generation via latent inversion and perceptual similarity, and 
+    (ii) synthetic data augmentation for CNN training?
+
+    \item \textbf{Image-based explainability:} 
+    Can image-based explainability methods that incorporate generative evidence provide clinically interpretable visual support that assists neuroradiologists in the diagnostic process? 
+
+\end{enumerate}
+
+\section{Hypotheses}
+
+
+
+
+\begin{itemize}
+    \item H1: StyleGAN-C generates class conditional brain tumor MRI slices that preserve the relevant tumor-related anatomical structures, as reflected by high neuroradiologist HITL ratings.
+
+    
+    \item H2A: Using optimization or encoder based latent inversion in the StyleGAN-C latent space enables tumor classification with an accuracy above 0.8.
+
+    
+    \item H2B: Incorporating StyleGAN-C generated synthetic images into the training set of a CNN classifier improves the confidence of its probabilistic predictions compared to a model trained exclusively on real MRI images.
+    
+    
+    \item H3: Image based explainability methods provide neuroradiologists with more clinically useful and trustworthy support for brain tumor classification than not using such methods.
+
+\end{itemize}
+
+The hypotheses encompass both conceptual and operational aspects. H1 and H3 are primarily conceptual, as they focus on clinical plausibility and perceived usefulness evaluated through expert assessment. In contrast, H2A and H2B are operational hypotheses, tested using quantitative performance metrics such as accuracy and predictive confidence.
+
+\section{Objectives}
+
+\subsection{General Objective}
+To develop and evaluate an explainable brain tumor MRI classification framework built on three integrated pillars: (i) generation of clinically validated class-conditional MRI images using StyleGAN-C, (ii) a classification strategy that uses StyleGAN-C to classify brain tumor MRI images, and (iii) an image based XAI module that enables clinicians to interpret model predictions in a clinically meaningful way.
+
+
+\subsection{Specific Objectives}
+
+\begin{enumerate}
+
+    \item To enforce patient level data leakage control in all experiments, ensuring that no subject appears across splits and that reported performance reflects clinically realistic generalization.
+
+    \item To implement and train a StyleGAN-C model for generating class-conditional synthetic brain tumor MRI images conditioned on tumor type.
+
+    \item To develop and evaluate an inference by generation classifier using StyleGAN-C latent inversion and perceptual similarity, and to compare this approach against a supervised discriminative encoder baseline.
+
+    \item To train and evaluate both a supervised encoder and an e4e based encoder that map real MRI slices into the latent space.
+    
+    \item To design, implement, and train a CNN baseline classifier for brain tumor classification from real MRI images under patient level cross-validation.
+    
+    \item To investigate how StyleGAN-C truncation and class-conditional synthetic augmentation influence classification accuracy and model robustness, incorporating statistical analysis and ablation studies to rigorously support the observed effects.
+
+    \item To generate image-based explanations for classification decisions and clinically validate the quality and usefulness of the generated images through expert review by neuroradiologists in order to improve interpretability.
+
+\end{enumerate}
+
+
+\begin{table}[ht]
+\centering
+\caption{Mapping of Specific Objectives to Experiments}
+\begin{tabular}{|p{6.5cm}|p{2.5cm}|p{3cm}|}
+\hline
+\textbf{Objective} & \textbf{Research Question} & \textbf{Experiment(s)} \\
+\hline
+Obj. 1: Enforce patient-level data leakage control & RQ1, RQ2, RQ3 & All experiments \\
+\hline
+Obj. 2: Train StyleGAN-C for conditional generation & RQ1 & Experiment 1 \\
+\hline
+Obj. 3: Evaluate inference-by-generation & RQ2 & Experiment 2A \\
+\hline
+Obj. 4: Train supervised and e4e-based encoders & RQ2 & Experiment 2B \\
+\hline
+Obj. 5: Train CNN classifier & RQ2 & Experiments 2A, 2B, 2C \\
+\hline
+Obj. 6: Analyze the effect of truncation and GAN-based augmentation using ablation studies and statistical tests & RQ2 & Experiment 2C \\
+\hline
+Obj. 7: Generate and clinically validate image-based explanations & RQ3 & Experiment 3 \\
+\hline
+\end{tabular}
+\label{tab:objectives_mapping}
+\end{table}
+
+Table~\ref{tab:objectives_mapping} summarizes the correspondence between the research objectives and the experiments conducted throughout this thesis. Despite addressing distinct methodological components, the three experiments are cohesively integrated into a \textbf{single end-to-end framework} spanning image generation (Experiment~1), predictive classification (Experiment~2), and clinical-level explainability (Experiment~3). In particular, Experiment~1 does not conceive generation as an end in itself, but rather as an \textbf{epistemological instrument} that enables the rest of the methodological pipeline: it allows (i) the evaluation of clinical plausibility and structural coherence of generated images, (ii) the implementation of \emph{classification by generation} through latent inference, and (iii) the enhancement of discriminative models under realistic scenarios of data scarcity, class imbalance, and strict patient-level data leakage control. From this perspective, the three experiments should be interpreted as interdependent components of a unified methodological approach, rather than as isolated evaluations of independent techniques.
+
+
+\clearpage
+
+\section{Methodology}
+
+The methodology designed to achieve the specific objectives of this thesis is organized into three main stages:
+
+\begin{enumerate}
+    \item \textbf{Dataset and Preprocessing}
+    \begin{itemize}
+        \item \textbf{Data Collection and Preprocessing:} Integrate the Figshare public MRI brain tumor dataset \cite{Cheng2015}, ensuring coverage of different tumor types and imaging modalities. Then, apply a preprocessing pipeline.
+
+        \item \textbf{Patient-Level Splitting and Leakage Control:} Create training and testing splits using unique patients, ensuring that no subject appears in more than one partition.
+
+        \item \textbf{Patient-Level Cross-Validation:} Within the training pool, perform k-fold cross-validation at the patient level, ensuring that each fold contains a disjoint set of patients and that no subject appears across folds.
+
+    \end{itemize}
+
+    \item \textbf{Design and Training}
+    \begin{itemize}
+        \item \textbf{Generative Models:} Implement and train a StyleGAN-C to learn a class-conditional generative space and produce high-quality synthetic MRI images conditioned on tumor type.
+
+        \item \textbf{CNN Classifier:} Implement and train a CNN baseline for brain tumor classification using both real and StyleGAN-C augmented datasets. Robustness is strengthened through patient-level k-fold cross-validation and ablation studies over key hyperparameters and training variables.
+
+        \item \textbf{Classification by Generation Framework:} Design a classification by generation approach in which each input MRI slice is mapped to latent space, modified to generate class-conditional reconstructions for each tumor type, and compared to the original image using LPIPS or CNN.
+
+        \item \textbf{e4e Latent Inversion:} Integrate and train an e4e encoder to invert MRI slices into latent space.
+
+    \end{itemize}
+
+    \item \textbf{Human in the Loop (HITL) Evaluation}
+    \begin{itemize}
+        \item \textbf{Explainability and Visual Explanations:}  Generate image-based explanations to provide clinically interpretable support for predictions.
+
+        \item \textbf{Validation and Clinical Feedback:} Validate the clinical quality of generated images through expert review by neuroradiologists, using HITL rating forms that assess realism, image quality, and diagnostic usefulness.
+
+
+    \end{itemize}
+\end{enumerate}
+\section{Contribution}
+\begin{enumerate}
+
+
+
+\item Developed and evaluated a CNN ensemble approach for brain tumor MRI classification, demonstrating a performance improvement from an accuracy of 0.934 in a single-run baseline trained exclusively on real images to 0.960 in an ensemble trained with StyleGAN-C augmented data.
+
+\item Developed and clinically validated a class-conditional StyleGAN-C generator for brain tumor MRI synthesis, using a neuroradiologist-led HITL protocol. The model achieved a global FID of 46.08 and a CAS of 0.923, with approximately half of the synthetic images assessed as diagnostically useful for supporting brain tumor classification.
+
+
+\item Introduced a patient-level data leakage control framework, consistently applied throughout all experimental phases, with the goal of mitigating overfitting and improving the robustness of classification models.
+
+
+
+\item Conducted the first \textbf{Human-in-the-Loop (HITL)} evaluation with a neuroradiologist in the context of brain tumor classification, assessing both the realism and diagnostic relevance of generated MRI images, as well as the interpretability of Grad-CAM heatmaps for model explainability.
+
+
+
+\item Proposed and evaluated an inference by generation classifier based on latent inversion of StyleGAN-C and perceptual similarity. Achieved non-trivial classification accuracies of 0.765 (LPIPS), 0.838 (CNN), and 0.832 (e4e), demonstrating the viability of generative approaches for tumor classification.
+
+\item Introduced the use of the \textbf{Classification Accuracy Score (CAS)} as an objective metric to evaluate the clinical utility of synthetic images generated by class-conditional GANs in a tumor classification context.
+
+
+\end{enumerate}
+
+
+The remainder of this thesis is structured as follows. Chapter~2 reviews the theoretical background on discriminative and generative models for MRI analysis. Chapter~3 presents the state of the art and identifies open gaps. Chapter~4 details the proposed methodology, while Chapters~5 and~6 report and discuss the experimental results. Finally, Chapter~7 concludes the thesis and outlines future research directions.

@@ -1,0 +1,697 @@
+\chapter{Theoretical Background and Literature Review}
+
+This chapter introduces the theoretical foundations underlying brain tumor classification from magnetic resonance imaging (MRI), with an emphasis on both discriminative and generative modeling. It reviews traditional supervised learning techniques, eXplainable AI (XAI) methods, data augmentation strategies, and HITL schemes. It then presents a comprehensive review of the state of the art in brain tumor MRI classification, identifying major achievements and persistent gaps that motivate the methodology proposed in this thesis.
+
+
+\section{Medical Background}
+
+Brain tumors constitute a serious health problem and remain one of the most lethal forms of cancer. In 2016, brain tumor was reported as the leading cause of cancer-related death in children (ages 0--14) in the United States, ranking above leukemia \cite{abiwinanda}. Brain and central nervous system (CNS) tumors are also the third most common cancer occurring among teenagers and adolescents (ages 15--39) \cite{abiwinanda}. According to 2017 cancer statistics, brain tumor is considered one of the foremost causes of cancer-related indisposition, morbidity and mortality around the world, both in children and in adults \cite{Rehman2020}.\\
+
+The brain is the core and most complex organ of the human body, composed of nerve cells and tissues that control essential functions such as breathing, muscle movement and sensory perception. Each cell type has its own functional role; while many cells grow and divide in a regulated manner, some may lose this regulatory capacity, become resistant to normal control mechanisms and proliferate aberrantly. Collections of such abnormal cells form a mass of tissue referred to as a tumor. Cancerous brain tumors correspond to uncontrolled and unnatural growth of brain cells and are regarded as one of the most life threatening and lethal cancers \cite{Rehman2020}.\\
+
+Brain tumors are generally classified into two broad categories: benign and malignant. Benign tumors are non cancerous and non progressive; they originate in the brain, typically grow slowly and do not spread to other parts of the body, and are therefore considered less aggressive. However, their abnormal growth can compress adjacent brain tissue or structures, and may still require timely surgical removal. In contrast, malignant tumors are cancerous, grow rapidly with ill-defined boundaries, invade surrounding healthy cells and can spread to other regions of the body. When a malignant tumor originates in the brain, it is referred to as a primary malignant tumor, whereas tumors that arise elsewhere in the body and subsequently spread to the brain are termed secondary malignant tumors \cite{Rehman2020}.\\
+
+Gliomas, meningiomas and pituitary tumors are among the most common types of intracranial neoplasms, each with distinct origins and anatomical characteristics. Gliomas are intra-parenchymal tumors that arise from glial cells within the brain tissue, typically in the cerebral hemispheres. They are usually malignant \cite{hernandez2022immunoprofiling}. In contrast, meningiomas are extra-parenchymal tumors that originate from the arachnoid cap cells of the meninges. They are typically benign \cite{cao2023hemorrhagic}. Lastly, pituitary tumors arise from the anterior pituitary gland located in the sellar region, beneath the brain and outside the brain parenchyma. These tumors are considered generally benign \cite{wijethilake2023imaging}.\\
+
+Accurate diagnosis of brain tumors is essential for implementing effective treatment. The choice of treatment modality depends on several factors, including the stage of the tumor at the time of diagnosis, its pathological type and its grade. Computer-aided diagnosis (CAD) techniques have been developed to assist experts in various tasks, such as tumor detection, classification and grading \cite{deepak2019brain}. 
+
+\section{Classifiers}
+
+Accurate brain tumor classification from magnetic resonance imaging (MRI) is a core problem in computer aided diagnosis, requiring models to capture delicate, high dimensional anatomical and pathological patterns. In practice, MRI classification is challenged by limited cohort sizes, slice wise label noise, and strong inter institutional domain shifts driven by scanner vendors, field strengths, and acquisition protocols. These factors make robustness and clinically grounded evidence as important as raw predictive accuracy.\\
+
+\paragraph{Notation.}
+Throughout this chapter, let $x \in \mathbb{R}^{H \times W \times C}$ denote an input MRI slice, where $H$ and $W$ are the spatial height and width in pixels and $C$ is the number of channels ($C=1$ for grayscale MRI). Let $y \in \mathcal{Y} = \{\text{glioma},\, \text{meningioma},\, \text{pituitary}\}$ denote the corresponding discrete tumor class label. The training dataset $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{N}$ consists of $N$ labeled image--label pairs drawn from the data-generating distribution $p_{\text{data}}(x, y)$.
+
+From a probabilistic perspective, classification can be approached either by directly approximating the posterior distribution or by modeling the data likelihood. Discriminative models learn the conditional distribution $P(y\mid x)$, focusing on decision boundaries that separate classes effectively when sufficient labeled data is available. In contrast, generative models learn the joint distribution $P(x,y)$, or equivalently the class-conditional likelihood $P(x\mid y)$ and class prior $P(y)$ \citep{mackowiak2021generative}. Using Bayes rule,
+\begin{equation}
+P(y\mid x) = \frac{P(x\mid y)P(y)}{\sum_{y'} P(x\mid y')P(y')},
+\end{equation}
+a generative classifier predicts the label that best explains the observation:
+\begin{equation}
+y^* = \arg\max_y P(x\mid y)P(y).
+\end{equation}
+Beyond classical probabilistic models, recent advances in conditional generative modeling including, diffusion models \cite{ukita2025imageclassificationusingdiffusion} and conditional GANs \cite{mirza2014conditionalgenerativeadversarialnets}, have expanded the role of generative approaches in medical imaging.
+
+\subsection{Discriminative models}
+
+Discriminative models are the dominant paradigm in brain tumor MRI classification due to their ability to learn decision functions directly from labeled data via $P(y\mid x)$. They often achieve SOTA performance on public benchmarks, yet can degrade under limited data regimes, inter institutional domain shifts, or when the clinically relevant details are difficult to see. Classical machine learning discriminative models are frequently used as historical or low data baselines, while modern SOTA is largely driven by deep CNN and Transformer variants. 
+
+\begin{itemize}
+    \item \textbf{Support Vector Machines (SVM):} Margin based classifiers that separate classes through an optimal hyperplane in a feature space. In MRI tumor classification, SVMs are typically applied to handcrafted radiomic descriptors or deep features extracted by CNNs, providing strong performance in small data settings but relying heavily on the quality of the chosen features \cite{hayat2024cnnsvm}.
+
+    \item \textbf{Vision Transformers (ViTs):} ViTs model global image dependencies through self attention mechanisms instead of convolutional operations. Their ability to capture long range interactions has led to strong results in medical imaging, especially with limited data via transfer learning \cite{dosovitskiy2021imageworth16x16words}.
+
+    \item \textbf{K-Nearest Neighbors (KNN):} A non-parametric method that assigns a label by majority vote among the $k$ closest samples in a feature space. For brain tumor MRI, KNN is commonly used over radiomic features or CNN embeddings rather than raw pixels, and its simplicity makes it interpretable but sensitive to feature scaling and noise \cite{venkatesh2019knn}.
+
+    \item \textbf{Random Forest (RF):} An ensemble of decision trees trained on bootstrapped subsets of data and features, whose aggregated predictions reduce variance and overfitting. RF models can be effective on structured radiomics but may struggle to capture complex spatial patterns without a dedicated feature extractor \cite{salman2024randomforest}.
+
+    \item \textbf{Convolutional Neural Networks (CNNs):} Deep architectures that learn hierarchical spatial representations through convolution and pooling, making them highly suited to MRI slice classification \cite{liu2025cnnml}. Transfer learning is frequently adopted to mitigate limited labeled data by fine tuning models pretrained on large scale datasets \cite{kaur2020transfer}. Hybrid configurations, such as CNN feature extraction followed by SVM classification, are also common when training data is scarce \cite{raza2022hybrid, hayat2024cnnsvm, ayadi2022hybrid}.
+\end{itemize}
+
+While discriminative models dominate current benchmarks, they may rely on spurious texture cues and can exhibit degraded generalization under domain shift or scarce labels, which are common in public MRI datasets.
+
+\subsection{Generative models}
+
+Generative classifiers infer labels by modeling $P(x\mid y)$ and selecting the class that maximizes likelihood (or minimizes a reconstruction/similarity loss). In brain tumor MRI, this paradigm is appealing because it can exploit class specific structure, provide uncertainty estimates, and enable explainability via reconstructions or counterfactuals \citep{mackowiak2021generative}. However, generative training is often more computationally demanding and sensitive to dataset size and diversity, and synthetic outputs may introduce artifacts if not clinically validated. 
+
+
+\begin{itemize}
+    \item \textbf{Diffusion models:} Likelihood based generators that learn to reverse a gradual noising process, enabling high fidelity conditional synthesis. Recent diffusion classifiers evaluate class likelihoods or reconstruction errors per class, offering strong robustness but at higher inference cost due to iterative sampling \cite{ukita2025imageclassificationusingdiffusion}.
+
+
+    \item \textbf{Variational Autoencoders (VAEs):} Latent variable models trained by maximizing a variational lower bound, producing a probabilistic encoder/decoder structure. VAEs can support classification by assessing class-conditional reconstruction likelihoods, though samples may appear over-smoothed relative to GAN-based methods \cite{Kingma_2019}.
+
+    \item \textbf{Energy-based models (EBMs):} Models that assign low energy to realistic samples via an unnormalized density $p_\theta(x)\propto \exp(-E_\theta(x))$. EBMs provide flexible likelihood modeling, yet their reliance on approximate sampling can limit scalability in high resolution MRI domains \cite{du2020implicitgenerationgeneralizationenergybased}.
+
+    \item \textbf{Generative Adversarial Networks (GANs):} Deep generative models in which a generator and a discriminator are trained in opposition to synthesize realistic samples from a learned data distribution. In MRI contexts, GANs are commonly used for data augmentation and image synthesis, capturing complex anatomical structures but requiring careful training to avoid artifacts and mode collapse \cite{goodfellow2014generativeadversarialnetworks}.
+
+\end{itemize}
+
+
+\noindent
+Overall, discriminative models excel in supervised accuracy when sufficient in domain labels are available, but offer limited transparency and are vulnerable to domain shifts and shortcut learning. Generative models, while harder to train and requiring clinical validation to avoid hallucinated artifacts, enable both synthetic image generation and reconstruction-based evidence that can support more clinically aligned explanations. These properties motivate the hybrid generative/discriminative strategy adopted in this thesis, which addresses the lack of structural validation mechanisms under limited MRI data by combining class-conditional generation, latent inversion, and discriminative prediction.
+
+\section{Generative Adversarial Networks (GANs)}
+
+Generative Adversarial Networks (GANs) \cite{goodfellow2014generativeadversarialnetworks} are implicit generative models composed of two networks trained in a two-player minimax game. Formally, let $z \in \mathbb{R}^{d_z}$ denote a latent noise vector sampled from a prior distribution $p_z$ (typically a standard multivariate normal $\mathcal{N}(0, I)$). Let $G: \mathbb{R}^{d_z} \rightarrow \mathbb{R}^{H \times W \times C}$ be the generator network that maps latent codes to synthetic images, and $D: \mathbb{R}^{H \times W \times C} \rightarrow [0,1]$ the discriminator network that estimates the probability that a given sample is drawn from the real data distribution $p_{\text{data}}(x)$ rather than from $G$. The original adversarial objective is:
+\begin{equation}
+\min_G \max_D V(D,G)=
+\mathbb{E}_{x\sim p_{\text{data}}}[\log D(x)] +
+\mathbb{E}_{z\sim p_z}[\log(1-D(G(z)))].
+\end{equation}
+Although this formulation defines the canonical GAN game, practical high resolution medical image synthesis often relies on stabilized variants (e.g., non-saturating losses, Wasserstein-GP, and adaptive augmentation) to mitigate training instability and mode collapse under limited datasets.
+
+\subsection{Conditional GANs}
+
+Conditional GANs (cGANs) \cite{mirza2014conditionalgenerativeadversarialnets} incorporate auxiliary information $y$ (class labels) into both $G$ and $D$, enabling class specific synthesis. The generator produces $G(z,y)$, while the discriminator evaluates realism and label consistency via $D(x,y)$. The conditional adversarial objective is:
+\begin{equation}
+\min_G \max_D V(D,G)=
+\mathbb{E}_{(x,y)\sim p_{\text{data}}}[\log D(x,y)] +
+\mathbb{E}_{z\sim p_z,\, y\sim p(y)}[\log(1-D(G(z,y),y))].
+\end{equation}
+In brain tumor MRI, conditioning is essential to generate tumor type specific images and to support class dependent reconstruction.
+
+
+\subsection{StyleGAN and StyleGAN2}
+
+StyleGAN \cite{karras2019stylebasedgeneratorarchitecturegenerative} introduces a mapping network $M:\mathcal{Z}\rightarrow\mathcal{W}$ that transforms an input latent code $z \in \mathbb{R}^{512}$ into an intermediate style vector $w=M(z) \in \mathbb{R}^{512}$. The intermediate space $\mathcal{W}$ is better disentangled than the input space $\mathcal{Z}$, meaning that individual dimensions of $w$ tend to correspond to semantically meaningful and independent visual attributes. A synthesis network then generates the image while injecting style through Adaptive Instance Normalization (AdaIN) at multiple layers, and stochastic noise is added per layer to promote local detail and diversity.\\
+
+StyleGAN2 \cite{Karras2019stylegan2} refines this architecture by removing characteristic artifacts of StyleGAN through weight demodulation, improved normalization, and a path length regularizer that encourages a smoother and more invertible mapping from latent codes to images.\\
+
+This thesis adopts a conditional StyleGAN2 variant (StyleGAN-C), in which class information is injected through learned embeddings and conditional normalization (AdaIN) across synthesis layers. Conditioning enables the generator to model tumor type specific anatomical structure under limited MRI data, while adaptive discriminator augmentation stabilizes training in low diversity cohorts. Beyond improving class conditional realism, StyleGAN-C admits efficient inversion in $\mathcal{W}/\mathcal{W}^+$, which is central to the inference by generation and structural validation mechanisms proposed in this work. While GANs excel in rapidly producing realistic samples, their mode convergence is limited. In
+contrast, diffusion models offer better mode coverage and high quality sampling, and have
+achieved high image fidelity in medical imaging. However, their iterative denoising process and
+the need for extensive noise schedule tuning make sampling slow and computationally expensive,
+leading to substantially longer training and inference times \cite{abdullah2025computationallyefficientdiffusionmodels}.
+Given this trade off, the present study adopts a GAN based model instead of diffusion models, prioritizing faster generation while maintaining good image quality.
+
+
+
+
+\subsection{Latent Spaces in StyleGAN}
+
+StyleGAN defines multiple latent spaces. The input space $\mathcal{Z}$ follows a fixed prior, while the intermediate space $\mathcal{W}$ is learned during training and captures disentangled semantic factors. In the extended space $\mathcal{W}^+$, a distinct style vector $w_i$ is provided to each synthesis layer, increasing expressiveness and making $\mathcal{W}^+$ the standard target for inversion and editing in practice.\\
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Template-Tesis-dii/img/latentspace.png}
+    \caption{Latent spaces in StyleGAN \cite{karras2019stylebasedgeneratorarchitecturegenerative}.}
+    \label{fig:latent_spaces}
+\end{figure}
+
+\subsection{GAN Inversion}
+
+GAN inversion seeks a latent code that reconstructs a given real image $x$ under a pretrained generator. For a generator $G$, inversion can be formulated as:
+\begin{equation}
+w^*=\arg\min_{w}\ \ell\big(G(w,y),x\big),
+\label{eq:gan_inversion}
+\end{equation}
+where $w$ belongs to $\mathcal{W}$ or $\mathcal{W}^+$ in StyleGAN based models, and $\ell(\cdot)$ measures reconstruction fidelity (e.g., MSE, SSIM, LPIPS) \cite{xia2022ganinversionsurvey}. Inversion can be performed via (i) encoder-based mappings, (ii) per-image optimization, or (iii) hybrid strategies combining both \cite{abdal2019image2styleganembedimagesstylegan,xia2022ganinversionsurvey}.\\
+
+In practice, optimization based inversion solves \eqref{eq:gan_inversion} separately for each image by iteratively updating $w$. This procedure is computationally expensive and relatively slow, but it typically achieves higher reconstruction fidelity and can better preserve fine details. In contrast, encoder based inversion learns a direct mapping $E(x)\to w$ and then performs inversion with a single forward pass at test time, which makes it much faster and more scalable, but typically with lower reconstruction quality and results that are more constrained by what the generator has learned during training \cite{abdal2019image2styleganembedimagesstylegan,xia2022ganinversionsurvey}.\\
+
+
+In medical imaging, inversion enables inference by generation by reconstructing the input under different class conditions and selecting the label with best structural agreement. However, inversion quality depends on generator realism, and reconstructions must be clinically validated to avoid hallucinated anatomical patterns.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Template-Tesis-dii/img/inversionframework.png}
+    \caption{Example of latent inversion and editing \cite{GULLMAR2024318}.}
+    \label{fig:inversion_framework}
+\end{figure}
+
+\subsection{Encoders and Embeddings for Inversion}
+
+An encoder $E$ maps an input image $x\in\mathbb{R}^{H\times W\times C}$ to a compact latent embedding, typically in $\mathcal{W}^+$ for StyleGAN:
+\begin{equation}
+w=E(x).
+\end{equation}
+The reconstructed image is then obtained as $G(w,y)$. Encoder-based inversion provides a fast approximation of $w^*$ and is often combined with refinement steps in hybrid approaches.
+
+Representative StyleGAN inversion encoders include e4e \cite{tov2021designingencoderstyleganimage}, which prioritizes alignment to the native $\mathcal{W}^+$ distribution for stable editing, and pSp \cite{richardson2021encoding}, which predicts $\mathcal{W}^+$ styles in a single forward pass. While originally developed on natural images, these encoders motivate supervised inversion schemes adapted to medical MRI domains. In this thesis, three inversion strategies are employed: (i) a supervised encoder trained end to end on brain tumor MRI slices, (ii) an e4e encoder fine tuned on brain tumor MRI images, and (iii) an optimization based inversion that refines latent codes using reconstruction losses.
+
+
+\section{Metrics}
+
+\subsection{GAN Inversion and Generation Metrics}
+
+The evaluation of class conditional generators and GAN inversion requires measuring both (i) the realism or clinical plausibility of synthetic images and (ii) the faithfulness of reconstructions with respect to real inputs. In this thesis, these metrics are computed on patient leakage free splits to avoid biased estimates.
+
+\subsubsection{Realism / Clinical Plausibility}
+
+\begin{itemize}
+
+
+    \item \textbf{Fréchet Inception Distance (FID):} Quantifies the distance between real and synthetic feature distributions, typically assuming a Gaussian approximation in a deep embedding space. Lower FID indicates higher realism and diversity. In medical imaging, FID is sensitive to the choice of feature extractor; thus, it is best viewed as a relative indicator across comparable settings.
+
+
+    \item \textbf{Learned Perceptual Image Patch Similarity (LPIPS):} Computes perceptual distance using deep feature activations, providing a proxy for high level anatomical similarity. In this thesis, LPIPS is a primary criterion for selecting the most plausible class conditioned reconstruction in inference by generation.
+\end{itemize}
+
+\subsubsection{Reconstruction Faithfulness}
+
+\begin{itemize}
+    \item \textbf{Peak Signal to Noise Ratio (PSNR):} A pixel wise fidelity metric derived from mean squared error. Higher PSNR indicates closer reconstructions, although it may not fully capture perceptual or clinical similarity.
+
+    \item \textbf{Structural Similarity Index (SSIM):} Measures structural agreement by comparing local luminance, contrast, and texture. SSIM is widely used in medical imaging because it better reflects preservation of anatomical structures than purely pixel wise metrics.
+\end{itemize}
+
+
+
+\subsubsection{Classification Accuracy Score (CAS)}
+
+In addition to perceptual and distributional metrics such as FID and LPIPS, this thesis employs the \textbf{Classification Accuracy Score (CAS)} \cite{ravuri2019classificationaccuracyscoreconditional} to evaluate class conditional generative models. CAS measures the accuracy of a fixed pretrained classifier in predicting the correct label of synthetic samples, providing a proxy for how well the generator preserves discriminative class information. Unlike FID, which captures overall distributional alignment, CAS is directly sensitive to class conditional fidelity and label consistency key properties in medical image synthesis where tumor class features are often hard to detect and confined to small regions of the image. While CAS depends on the quality and possible biases of the reference classifier, it complements other metrics by emphasizing the \emph{semantic correctness} of generated images rather than purely visual realism or low level similarity. In this work, CAS is used to benchmark the ability of StyleGAN-C to preserve tumor type specific characteristics across synthetic slices.\\
+
+These quantitative metrics for generated images are purely descriptive and do not capture clinical validity by themselves. Consequently, they must be complemented by expert evaluation from trained neuroradiologists to assess whether the images are realistic and diagnostically useful.
+
+\subsection{Classifier Performance Metrics}
+
+Classifier performance is assessed using standard confusion-matrix-derived metrics: accuracy, precision, recall, F1-score, and their macro-averaged variants. In multiclass settings, macro-averaged F1 ($\mathrm{F1}_{\mathrm{macro}} = \frac{1}{C}\sum_{c=1}^{C} \mathrm{F1}_c$) is adopted as the primary metric, giving equal weight to each tumor category regardless of class frequency.
+
+
+\section{Image Generation}
+
+Image generation provides a mechanism to approximate complex image distributions and synthesize new samples $\tilde{x}$ from latent variables. Given a latent code $z\sim p(z)$ and an optional class label $y$, a conditional generator learns a mapping $G(z,y)$ such that the induced distribution matches the empirical data distribution. In medical imaging, generation is particularly relevant for mitigating data scarcity, balancing classes, and enabling reconstruction-based evidence for interpretability.\\
+
+Several generative families exist, including GANs, VAEs, and diffusion models. Diffusion models typically offer strong likelihood based modeling and robustness, but require iterative sampling at inference, making them computationally expensive for high resolution conditional reconstruction. VAEs provide probabilistic latent structure but often yield over-smoothed samples, which can hide important visual signs of the tumor. GAN-based models, especially StyleGAN variants with adaptive augmentation, produce sharper class-conditional images and admit efficient inversion in $\mathcal{W}/\mathcal{W}^+$ spaces. These properties, together with the comparatively faster training and sampling of GANs, motivate the choice of StyleGAN-C in this thesis as the primary generator to support both data augmentation and inference by generation pipelines \cite{abdullah2025computationallyefficientdiffusionmodels}.
+\\
+
+Ensuring clinical plausibility in synthetic MRI generation is not merely an aesthetic concern, it is fundamental to patient safety and downstream trust. GAN generated images may appear visually realistic while omitting critical pathological features or introducing spurious anomalies. This is especially problematic in brain tumor classification, where tumor boundaries, edema patterns, and non-enhancing lesions can be hard to see and easily distorted by imperfect generators. Therefore, beyond quantitative metrics like FID or LPIPS, expert validation by neuroradiologists is essential to confirm that generated slices maintain the anatomical integrity and radiological patterns expected for each tumor class. Without this step, synthetic augmentation risks introducing biases or misleading the classifier, undermining clinical deployment. This thesis addresses that gap through a structured HITL review and strict leakage controlled splits that isolate synthetic image influence.
+
+
+
+\section{Data Augmentation}
+
+Data augmentation enlarges the effective training set to improve generalization under limited data \cite{kumar2025enhancingimageclassificationaugmentation}. \textbf{Transformation-based augmentation} applies geometric and intensity perturbations (rotations, flips, cropping, brightness jitter) directly to existing images, preserving label consistency but limited to warping existing anatomy. \textbf{Generative augmentation} instead samples new images from a learned conditional model $G(z, y)$, producing anatomically plausible variants that can address class imbalance and capture complex visual patterns beyond simple transformations. However, generative augmentation introduces risks of mode collapse and artifacts, requiring validation through both quantitative metrics and clinical expert review. Throughout this thesis, all augmentation is performed strictly within patient-disjoint splits.
+
+\section{Statistical Tests}
+
+To assess whether observed performance differences between models are statistically meaningful, this thesis employs two complementary tests. The \textbf{McNemar test} \cite{mcnemar1947note} is a non-parametric method that compares two classifiers on paired observations by counting discordant predictions (cases where exactly one model is correct). The resulting chi-squared statistic $\chi^2 = (b-c)^2/(b+c)$ tests whether the error profiles differ significantly. The \textbf{Negative Log-Likelihood (NLL)} analysis provides a probabilistic perspective by comparing the confidence assigned to the correct class by each model; a paired permutation test is used to determine whether one model produces systematically better-calibrated predictions.
+
+
+
+
+\section{Human in the Loop (HITL)}
+
+Human-in-the-Loop (HITL) strategies integrate expert knowledge into the ML pipeline \cite{wu2022survey}. In medical imaging, HITL is critical because labeled cohorts are limited, annotations exhibit inter-observer variability, and purely automated models may rely on spurious cues. HITL can be organized into three areas: (i) data curation and annotation, where experts verify labels and select informative cases; (ii) model validation, where clinicians audit predictions, validate explanations (e.g., Grad-CAM), and assess the clinical plausibility of synthetic images; and (iii) deployment monitoring, where feedback supports continuous refinement.
+
+In this thesis, HITL is instantiated through expert validation: a neuroradiologist reviews model outputs and Grad-CAM explanations using structured Likert-scale questionnaires, providing feedback on realism, confidence, and diagnostic utility.
+
+
+
+\section{Explainable AI (XAI)}
+
+Explainable AI (XAI) seeks to provide human understandable evidence for model decisions, a requirement that is particularly critical in safety sensitive domains. In brain tumor MRI, explainability is motivated not only by ethical accountability, but also by domain specific challenges: limited labeled cohorts, inter observer variability, and strong inter institutional domain shifts can lead highly accurate discriminative models to rely on shortcut features, while generative models may introduce clinically plausible but incorrect artifacts. Consequently, trustworthy computer aided diagnosis requires explanations that are both faithful to the model and clinically plausible.\\
+
+Following the taxonomy of Tjoa and Guan \cite{9233366}, XAI methods can be grouped into perceptual (human facing), structural (mathematically grounded), and human based perspectives. In this thesis, explainability is applied through a hybrid strategy that combines discriminative saliency maps with generative, class conditional reconstruction evidence, providing complementary visual and structural justification for each prediction.
+
+\subsection{Perceptual Interpretability}
+
+Perceptual interpretability refers to explanation techniques that are directly interpretable by humans, typically through visual or textual representations.
+
+\paragraph{1. Saliency based methods.}
+Saliency methods highlight regions of an input image that most influence the model prediction. In medical CNNs, heatmaps are widely used to assess whether the network attends to tumor-relevant structures.
+\begin{itemize}
+    \item \textbf{Class Activation Mapping (CAM)} produces localization maps for CNNs with global average pooling, but is restricted to specific architectures.
+    \item \textbf{Gradient-weighted CAM (Grad-CAM)} generalizes CAM by using class specific gradients, enabling application to most CNN backbones and yielding coarse but clinically intuitive attention maps.
+    \item \textbf{LIME} approximates the model locally with an interpretable surrogate, providing model agnostic explanations but potentially unstable under small perturbations.
+\end{itemize}
+While valuable for visual auditing, saliency maps are not causal explanations and can be sensitive to noise or model reconfiguration; therefore, they should be interpreted as supportive evidence rather than definitive clinical localization.
+
+\paragraph{2. Signal based methods.}
+Signal based approaches inspect internal activations to visualize learned representations, for example via deconvolutional reconstructions or activation maximization. These methods can reveal prototypical patterns learned by a network, but they are less commonly used in brain tumor MRI workflows due to limited clinical interpretability.
+
+\paragraph{3. Verbal interpretability.}
+Verbal explanations describe decisions through natural language or rule based statements. In medical settings, such explanations are useful when grounded in explicit visual evidence, and may be complemented by structured reporting systems.
+
+
+
+
+
+\subsection{Human based Perspectives and Evaluation}
+
+Human based interpretability evaluates explanations through expert assessment, emphasizing clinical plausibility and usefulness. In this thesis, XAI is validated by comparing neuroradiologists' diagnoses with and without the use of XAI, ensuring that the explanations align with neuroradiological reasoning.
+
+
+
+\subsection{Counterfactual Generation as Structural Explanation}
+
+In addition to saliency and reconstruction based evidence, counterfactual generation provides a powerful form of explainability by synthesizing minimal input changes that flip a model's prediction. These methods generate plausible variants of an image that result in a different predicted class, offering causal insight into decision boundaries.\\
+
+Chang et al. \cite{chang2019explainingimageclassifierscounterfactual} introduced a framework that formulates counterfactual explanation as an optimization problem over latent variables of a generative model. By inverting an image into the latent space and perturbing it to induce a target label, the generator synthesizes a semantically similar image with a different classification outcome. This counterfactual example helps visualize which structural features are most influential in driving the model’s decisions.\\
+
+Having established the theoretical foundations, the following sections review the current state of the art in brain tumor MRI classification, identifying major achievements and persistent methodological gaps.
+
+\section{State of the Art}
+
+This section reviews the main approaches for brain tumor prediction from MRI, covering three key areas: (1) classification models, (2) generative models for synthesis and augmentation, and (3) eXplainable AI (XAI) methods for clinical transparency.
+
+
+Classification models are central to computer aided brain tumor diagnosis from MRI. The literature shows a clear evolution: early studies relied on handcrafted feature extraction coupled with traditional classifiers, whereas contemporary approaches are dominated by deep learning, particularly convolutional neural networks (CNNs) and transfer learning. This progression has enabled scalable, high performing tumor classification pipelines, although reported results often depend strongly on dataset size, resolution, and evaluation protocol.\\
+
+Early machine learning pipelines combined engineered descriptors with discriminative classifiers. Zacharaki et al.~\cite{5193232} introduced an SVM-RFE framework using texture features and region of interest descriptors, evaluated on 98 patients. El-Dahshan et al.~\cite{ELDAHSHAN2010433} proposed a hybrid approach based on DWT feature extraction, PCA dimensionality reduction, and ANN/KNN classification, reporting 98.6\% accuracy on 70 MRI images. While these studies achieved strong results in low data settings, they were limited by small cohorts and dependence on handcrafted features.\\
+
+A major milestone was the release of the multi class dataset by Cheng et al.~\cite{Cheng2015}, which remains one of the most widely used public benchmarks. Cheng et al. proposed tumor-region augmentation and ROI partitioning to enrich discriminative cues across three tumor types. Subsequent works leveraged this dataset to adopt deep CNN based classification. Abiwinanda et al.~\cite{abiwinanda} compared multiple CNN architectures using a reduced subset of the Cheng dataset, resizing images to 64$\times$64 to mitigate computational cost, and reported 94.68\% accuracy. Mohsen et al.~\cite{mohsen2018classification} combined fuzzy c-means segmentation with DWT+PCA feature extraction and a DNN classifier, achieving 96.97\% accuracy on a small Harvard cohort, supporting the advantage of deep models over classical baselines.\\
+
+Transfer learning rapidly became a standard strategy to mitigate limited annotations. Deepak et al.~\cite{deepak2019brain} fine tuned a modified GoogLeNet for three way tumor classification and further improved performance by feeding CNN features into KNN and SVM classifiers, reaching up to 98\% accuracy. Rehman et al.~\cite{Rehman2020} benchmarked AlexNet, GoogLeNet, and VGG variants under augmentation and fine tuning, finding VGG16+SVM to be the best configuration (94.58\% accuracy). Sajjad et al.~\cite{sajjad2019multigrade} addressed data scarcity via extensive transformation-based augmentation (rotations, flips, blurring, sharpening, skewing), increasing class sizes by more than one order of magnitude and improving specificity from 93.34\% to 96.12\%. More recent studies continue to report high in domain performance with fine-tuned CNN backbones, such as ResNet-based variants~\cite{kumar2023braintumor}.
+
+
+\begin{figure}[H] \centering \includegraphics[width=0.65\textwidth]{Template-Tesis-dii/img/1-s2.0-S0010482519302148-gr2_lrg.jpg} \caption{Transfer Learning Framework \cite{deepak2019brain}} \label{fig:tl_framework} \end{figure}
+
+
+\begin{figure}[H] \centering \includegraphics[width=0.6\textwidth]{Template-Tesis-dii/img/cnnframrwork.jpg} \caption{CNN Framework \cite{sajjad2019multigrade}} \label{fig:cnn_framework} \end{figure}
+
+
+
+Recent discriminative SOTA extends 2D CNN baselines with volumetric 3D CNNs and Vision Transformer families. 3D CNNs exploit inter slice context but typically require larger standardized cohorts to avoid overfitting~\cite{bharathraj2025implementation3dcnn}. Tummala et al. \cite{Tummala2022BrainTumorViT} demonstrated a ViT ensemble model that achieved 98.7\% accuracy on the Figshare dataset; however, patient-level leakage control is not reported (NR in Table~\ref{tab:classification_models}), which may inflate the reported metrics. This method also requires a large amount of data to achieve its full potential. Filvantorkaman et al. \cite{filvantorkaman2025fusionbasedbraintumorclassification} proposed an ensemble model combining MobileNetV2 and DenseNet121 CNNs using a soft voting strategy, achieving 91.7\% accuracy on the Figshare dataset.\\
+
+Overall, classical feature based models established feasibility under low data regimes, while CNN and transfer learning pipelines became dominant once larger public datasets were introduced. Nevertheless, reported accuracies above 95–98\% are often obtained without patient control and are tested on a single dataset. This motivates a more critical interpretation of aggregate metrics, emphasizing evaluation protocols rather than raw numbers.\\
+
+A central methodological concern is patient level data leakage. Public MRI datasets frequently provide slice level labels without enforcing patient disjoint splits. Since a single subject contributes multiple highly correlated slices, mixing patients across training and testing partitions can inflate performance by allowing models to memorize subject specific anatomy or acquisition patterns. For this reason, reliable benchmarking requires patient wise disjoint partitions and, ideally, stratified patient level cross validation. This thesis follows such leakage free protocols, ensuring that performance reflects true generalization to unseen subjects.\\
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.8}
+\caption{Representative ML/DL models for brain tumor MRI classification. Reported metrics (\%) are not strictly comparable across studies due to heterogeneous splits, preprocessing, and evaluation protocols. NR: not reported.}
+
+
+\begin{tabular}{|p{2.2cm}|p{2.4cm}|p{1.6cm}|p{2.5cm}|p{1.7cm}|c|c|c|c|}
+\hline
+\textbf{Author (Year)} & \textbf{Technique} & \textbf{Task} & \textbf{Dataset} & \textbf{Patient-wise split} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} \\
+\hline
+Zacharaki et al. (2009)~\cite{5193232} 
+& SVM-RFE + texture 
+& Binary 
+& Private (98 pts) 
+& Yes 
+& 85.0 & NR & 87.0 & NR \\
+\hline
+El-Dahshan et al. (2009)~\cite{ELDAHSHAN2010433} 
+& DWT + PCA + KNN/ANN 
+& Binary 
+& Private (70 imgs) 
+& NR 
+& 98.6 & NR & 100.0 & NR \\
+\hline
+Cheng et al. (2015)~\cite{Cheng2015} 
+& ROI partition + GLCM 
+& Multi-class 
+& Figshare
+& Yes 
+& 92.3 & NR & NR & NR \\
+\hline
+Abiwinanda et al. (2018)~\cite{abiwinanda} 
+& Custom CNN 
+& Multi-class 
+& Figshare subset
+& NR 
+& 94.7 & NR & NR & NR \\
+\hline
+Mohsen et al. (2018)~\cite{mohsen2018classification} 
+& DWT + PCA + DNN 
+& Binary 
+& Harvard (66 scans) 
+& NR 
+& 97 & 97.0 & 97.0 & 97.0 \\
+\hline
+Deepak et al. (2019)~\cite{deepak2019brain} 
+& GoogLeNet TL + KNN/SVM on CNN features 
+& Multi-class 
+& Figshare
+& Yes 
+& 98.0 & NR & NR & NR \\
+\hline
+Sajjad et al. (2019)~\cite{sajjad2019multigrade} 
+& VGG19 TL + geometric aug. 
+& Multi-class 
+& Radiopedia + Figshare
+& NR 
+& 96.1 & NR & NR & NR \\
+\hline
+Rehman et al. (2019)~\cite{Rehman2020} 
+& VGG16 TL + SVM 
+& Multi-class 
+& Figshare
+& NR 
+& 94.6 & NR & 88.4 & NR \\
+\hline
+Kumar et al. (2023)~\cite{kumar2023braintumor} 
+& Fuzzy features + ResNet50 TL 
+& Binary 
+& ACRIN 6684 
+& NR 
+& 98.9 & 97.5 & 96.4 & 97.3 \\
+\hline
+\end{tabular}
+\vspace{0.5em}
+\footnotesize\textit{Note: NR indicates Not reported.}
+
+\label{tab:classification_models}
+\end{table}
+
+
+\subsection{Generative Models in Medical Imaging}
+
+Generative models have become increasingly important in brain tumor MRI research because they approximate the class-conditional distribution $p(x\mid y)$ and can therefore synthesize realistic tumor specific samples. By enriching training cohorts with anatomically plausible variability, generative models can improve downstream classifier robustness, while also providing mechanisms to audit whether predictions rely on clinically meaningful structure. These capabilities are especially relevant under public dataset conditions, where limited cohort size and domain shift make purely discriminative learning brittle.\\
+
+Early work focused on GAN based augmentation. Ghassemi et al. (2020) \cite{GHASSEMI2020101678} presented a data augmentation pipeline based on DCGAN trained on the dataset from \cite{Cheng2015}. Because high resolution synthesis was unstable under limited data, the authors downsampled inputs from $512\times512$ to $64\times64$ and trained both the GAN and the classifier at that resolution. Their results showed that augmentation improved CNN classification performance, reaching $95.6\%$ accuracy, but the approach remained constrained by low resolution fidelity and limited structural diversity.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{1-s2.0-S1746809419302599-gr4_lrg.jpg}
+    \caption{Generated images at $64\times64$ resolution produced by DCGAN augmentation \cite{GHASSEMI2020101678}.}
+    \label{fig:Generated images 64x64}
+\end{figure}
+
+Li et al. (2020) \cite{li2020tumorgan} proposed TumorGAN, a pix2pix based image to image framework in which tumor masks and backgrounds from different subjects are combined to generate new samples at $256\times256$ resolution. This strategy produces anatomically consistent variants and offers a combinatorial increase in sample count, but it requires reliable tumor segmentations and remains limited to previously observed classes and appearance patterns.\\
+
+Despite their practical benefits, these early augmentation approaches share key limitations: synthesis is often bounded to $\leq256\times256$, fidelity and diversity heavily depend on cohort variability, and generators may introduce method specific biases. Moreover, if patient wise separation is not enforced, synthetic images derived from a subject may leak into evaluation splits, inflating reported gains. These constraints motivated a shift toward \emph{latent space modeling and manipulation}, where class specific factors are more disentangled and controllably varied to generate diagnostically meaningful diversity.\\
+
+Zhan et al. (2021) \cite{Zhan2021} addressed multimodal MRI synthesis with a latent fusion conditional GAN (LR-cGAN). Their method encodes different modalities with separate encoders and fuses them through a latent space processing network before decoding a target modality. This line of work illustrates how structured latent representations can support modality aware synthesis better than direct pixel space augmentation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Template-Tesis-dii/img/lrcgan.jpg}
+    \caption{LR-cGAN framework for latent fusion across MRI modalities \cite{Zhan2021}.}
+    \label{fig:lrcgan}
+\end{figure}
+
+More recent research explores high capacity architectures that enable sharper, higher resolution samples and more reliable inversion. Fetty et al. (2019) \cite{Fetty2020} investigated StyleGAN for medical image synthesis at $512\times512$, leveraging WGAN-based stabilization and an encoder mapped to the disentangled $\mathcal{W}$ space. Their study suggests that StyleGAN style latent spaces facilitate both high fidelity generation and semantically meaningful latent editing, although training required substantially larger cohorts and higher compute budgets than typical public MRI datasets. In parallel, methods that explicitly optimize similarity or structure preserving losses have been proposed to enhance perceptual fidelity at moderate resolutions \cite{Guven2023BrainMRI}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Template-Tesis-dii/img/1-s2.0-S0939388920300544-gr2_lrg.jpg}
+    \caption{High-resolution synthetic MRI samples generated with StyleGAN \cite{Fetty2020}.}
+    \label{fig:Generated images 512x512}
+\end{figure}
+
+Yurtsever et al. (2024) \cite{yurtsever2024brain} used StyleGANv2‑ADA to augment MRI slices from the Gazi Brains 2020, BraTS2021 and BR35H datasets and demonstrated improved classification accuracy of deep CNNs. While they indicate that augmentation was applied exclusively to training data to avoid leakage, the study does not explicitly establish patient level partitioning or guarantee that synthetic images derived from one patient did not influence classifier test sets. In contrast, this thesis enforces strict patient level data leakage control across both the generative and classification stages.\\
+
+
+Diffusion models \cite{zuo2025multichannel} have recently emerged as a strong alternative for medical image generation and augmentation. Unlike implicit GAN objectives, diffusion models learn a likelihood based denoising process, which tends to improve mode coverage and sampling stability under domain shift. In brain tumor MRI, recent diffusion approaches report high quality conditional synthesis and multimodal augmentation, indicating potential for both data balancing and structural validation. However, their iterative sampling makes inference more expensive than GANs, and systematic comparisons under low resource, patient-disjoint evaluation settings remain limited \cite{abdullah2025computationallyefficientdiffusionmodels}.\\
+
+% ------------------------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.6}
+\caption{Comparison of representative generative models in medical imaging. Reported metrics are not fully comparable across studies due to differing datasets, preprocessing, and evaluation protocols. ``--'' indicates not reported or not applicable.}
+\begin{tabular}{|p{2.2cm}|p{1.8cm}|p{0.9cm}|p{1.4cm}|p{1.5cm}|p{1.7cm}|p{1cm}|p{0.8cm}|p{1cm}|p{1cm}|p{1cm}|}
+\hline
+\textbf{Author (Year)} & \textbf{Technique} & \textbf{Cond.} & \textbf{Leakage Control} & \textbf{Dataset} & \textbf{Resolution} & \textbf{Latent} & \textbf{FID} & \textbf{PSNR} & \textbf{SSIM} & \textbf{LPIPS} \\
+\hline
+Ghassemi et al. (2020) \cite{GHASSEMI2020101678} & DCGAN & No & No & Figshare & $64\times64$ & No & -- & -- & -- & -- \\
+\hline
+Li et al. (2020) \cite{li2020tumorgan} & pix2pix (TumorGAN) & No & No & Brats2017 & $256\times256$ & No & 77.43 & -- & -- & -- \\
+\hline
+Zhan et al. (2021) \cite{Zhan2021} & LR-cGAN & Yes & Partial & BraTS15 & $256\times256$ & Yes & -- & 26.50 & 0.917 & -- \\
+\hline
+Fetty et al. (2019) \cite{Fetty2020} & StyleGAN & No & No & 117 Patients & $512\times512$ & Yes ($\mathcal{W}$) & 13.0 & -- & -- & -- \\
+\hline
+Güven et al. (2023) \cite{Guven2023BrainMRI} & SSimDCL & No & No & 2,014 images & $256\times256$ & Yes & 92.36 & 30.72 & -- & 0.39 \\
+\hline
+Zuo et al. (2025) \cite{zuo2025multichannel} & Diffusion Model & No & No & LGG & $256\times256$ & No & 70.58 & -- & -- & -- \\
+\hline
+Yurtsever et al. (2024) \cite{yurtsever2024brain}  & StyleGAN2-ADA & No & No & LGG BraTS 2020 & $256\times256$ & No & -- & -- & -- & -- \\
+\hline
+\end{tabular}
+\label{tab:generative_models}
+\end{table}
+
+
+
+
+
+\subsubsection{Conditional StyleGAN Related Work}
+
+Given the increasing relevance of StyleGAN like architectures for high fidelity medical synthesis and inversion, the following works summarize how conditional StyleGAN variants have been formulated and applied, motivating their adaptation to brain tumor MRI.\\
+
+Conditional StyleGAN variants extend the original style based generator by injecting class information into the synthesis process, enabling class consistent sampling and structured latent editing. Oeldorf et al. (2019) \cite{oeldorf2019loganv2conditionalstylebasedlogo} introduced conditionality by adding label embeddings to the latent pipeline and incorporating class terms in the discriminator loss. Their work also formalized the truncation trick to trade off fidelity and diversity by controlling latent deviation from the class center of mass.\\
+
+Dobler et al. (2022) \cite{dobler2022artcreationmulticonditionalstylegans} further developed conditional truncation, arguing that truncating toward a global latent mean may suppress class-specific traits. Instead, their conditional truncation moves latents toward a \emph{class specific} mean, improving conditional fidelity while preserving visual quality. They also proposed class guided latent arithmetic to modify semantic attributes.\\
+
+Horita et al. (2019) \cite{horita} proposed conditional AdaIN injections after each fully connected layer, showing that class embeddings control global structure while per layer noise controls fine detail.\\
+
+Pakdelmoez et al. (2024) \cite{pakdelmoez2024controllableretinalimagesynthesis} demonstrated that conditional StyleGAN can generate clinically valid, class conditional samples for diabetic retinopathy and that latent manipulations can be used to control disease severity. This line of evidence supports the feasibility of conditional StyleGAN frameworks under limited medical data, motivating their adaptation to brain tumor MRI generation and inversion based structural validation in this thesis.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Template-Tesis-dii/img/Captura de pantalla 2025-07-25 a las 10.22.02 p. m..png}
+    \caption{Conditional StyleGAN framework for controllable medical image synthesis \cite{pakdelmoez2024controllableretinalimagesynthesis}.}
+    \label{fig:cstylegan_framework}
+\end{figure}
+
+\noindent
+Overall, the literature indicates a clear trajectory from low resolution GAN augmentation toward high capacity conditional generators with disentangled latent spaces and inversion friendly designs. These properties are particularly aligned with inference by generation pipelines, where class conditioned reconstructions can serve both as synthetic training support and as structural evidence to validate discriminative predictions. This motivates the use of StyleGAN-C and $\mathcal{W}/\mathcal{W}^+$ inversion as the generative backbone of the proposed hybrid framework.
+
+
+
+
+\subsection{XAI Related Work}
+
+Explainable artificial intelligence (XAI) has become a central component of computer aided brain tumor diagnosis, as high predictive accuracy alone is insufficient for clinical adoption. In MRI tumor classification, most XAI methods are \emph{post hoc} and aim to highlight image regions or features that support a model decision. \\
+
+Early evidence in this domain relies strongly on saliency based visualization. Windisch et al. (2020) \cite{windisch2020implementation} proposed a probabilistic interpretation of a multiclass CNN classifier, where class probabilities guide prediction and abstention can be triggered by confidence thresholds. By increasing the decision threshold to $0.9$, they reported a rise in accuracy from $93\%$ to $97\%$, at the cost of rejecting low confidence cases. To support interpretability, Grad-CAM was used to localize discriminative regions, suggesting that the network focuses on structural patterns spatially consistent with tumor-relevant anatomy.\\
+
+Esmaeili et al. (2021) \cite{esmaeili2021explainable} extended this line of work by coupling tumor localization with CNN based prediction. Using a DenseNet121 backbone, their pipeline delivers multiclass predictions and Grad-CAM heatmaps to highlight the regions that most influence the decision. Their reported accuracy of $92.1\%$ illustrates how saliency maps can add transparency to high-performing classifiers.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{Template-Tesis-dii/img/jpm-11-01213-g001.png}
+    \caption{Grad-CAM heatmap example for brain tumor MRI classification \cite{esmaeili2021explainable}.}
+    \label{fig:gradcam_esmaeili}
+\end{figure}
+
+Beyond gradients, other works employ local surrogate explanations and feature attributions. Gaur et al. (2022) \cite{gaur2022explanation} investigated SHAP and LIME to explain CNN based brain tumor predictions. SHAP provides consistent local attributions derived from Shapley values, estimating the contribution of each pixel to the class score. LIME, in contrast, explains a decision by fitting sparse linear models over perturbed superpixel representations. Their classifier achieved $94.96\%$ accuracy, and the explanations offer complementary pixel level evidence for clinical inspection.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Template-Tesis-dii/img/fgene-13-822666-g005.jpg}
+    \caption{SHAP-based attribution visualization \cite{gaur2022explanation}.}
+    \label{fig:shapvalue}
+\end{figure}
+
+Positive SHAP values that increase the likelihood of the class are represented by red pixels, whereas negative values that decrease the likelihood are represented by blue pixels.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Template-Tesis-dii/img/fgene-13-822666-g007.jpg}
+    \caption{LIME explanation example for meningioma MRI \cite{gaur2022explanation}.}
+    \label{fig:lime_gaur}
+\end{figure}
+
+Interpretations generated by LIME highlight superpixels that most influence the predicted class. (A) Input MRI slice, (B) quick-shift superpixels used for perturbations, and (C) final meningioma explanation map.\\
+
+Recent studies emphasize both the utility and the risk of saliency. Roy et al. (2024) \cite{roy2024explainable} employed Grad-CAM to analyze a high performing ensemble based classifier. Their results showed that heatmaps frequently align with tumor regions, but can also assign relevance to anatomically unrelated areas, which may mislead clinical interpretation. This highlights the need for explanation stability checks and complementary evidence beyond saliency alone.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Template-Tesis-dii/img/journal.pone.0310748.g022.PNG}
+    \caption{Grad-CAM visualization illustrating clinically plausible and implausible attributions \cite{roy2024explainable}.}
+    \label{fig:gradcam_roy}
+\end{figure}
+
+Alternative relevance mechanisms have also been explored. Mandloi et al. (2024) \cite{mandloi2024explainable} proposed Layer wise Relevance Propagation (LRP) to redistribute prediction evidence back to the input space. Using an EfficientNet-B0 backbone, they achieved a reported performance of $0.99$, while LRP heatmaps quantify positive and negative evidence supporting the decision.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Template-Tesis-dii/img/Captura de pantalla 2025-07-25 a las 7.47.39 p. m..png}
+    \caption{LRP-based explanation for brain tumor MRI classification \cite{mandloi2024explainable}.}
+    \label{fig:LRP}
+\end{figure}
+
+The right side image shows the original MRI slice, while the left side image shows LRP relevance highlighting why the model predicts the pituitary or no tumor class.\\
+
+More recently, multimodal and clinician facing XAI systems have emerged. Wang et al. (2023) \cite{wang2023chatcad} introduced ChatCAD, a framework combining classification, segmentation, and automatic reporting. The predicted class distribution and segmented ROI are used to generate structured textual summaries, which can be integrated into LLM driven interactive consultations. Such approaches aim to align AI outputs with clinical workflows by offering both visual and textual decision support.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Template-Tesis-dii/img/Captura de pantalla 2025-07-25 a las 8.09.53 p. m..png}
+    \caption{ChatCAD example combining visual prediction and automated reporting \cite{wang2023chatcad}.}
+    \label{fig:chatcad}
+\end{figure}
+
+Finally, studies have begun to quantify the effect of explainability on clinician trust. Manz et al. (2025) \cite{manz2025do} evaluated whether gradient based XAI improves acceptance of AI predictions in a clinical setting. Testing five methods with 15 pathologists, they found that Grad-CAM++ was generally preferred and perceived as more transparent. Their results indicate that XAI can increase trust, but the impact depends on explanation fidelity, presentation, and user context.
+
+\begin{figure}[ht]
+    \centering
+    \begin{minipage}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Template-Tesis-dii/img/cjp270023-fig-0003-m.jpg}
+        \caption{Likert-scale evaluation of clinical acceptance with XAI overlays \cite{manz2025do}.}
+        \label{fig:questions1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Template-Tesis-dii/img/cjp270023-fig-0005-m.jpg}
+        \label{fig:questions2}
+    \end{minipage}
+\end{figure}
+
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{6pt} % más espacio entre columnas
+\renewcommand{\arraystretch}{1.5}
+\caption{Comparative summary of representative XAI approaches for brain tumor MRI classification.}
+\begin{tabular}{|p{3.2cm}|p{3.0cm}|p{4.2cm}|p{3.6cm}|}
+\hline
+\textbf{Author (Year)} & \textbf{XAI Method} & \textbf{Base Model / Task} & \textbf{Explanation Type} \\
+\hline
+Windisch et al. (2020)~\cite{windisch2020implementation} 
+& Grad-CAM 
+& Multiclass CNN (3 tumor types) 
+& Gradient-based saliency heatmaps \\
+\hline
+Esmaeili et al. (2021)~\cite{esmaeili2021explainable} 
+& Grad-CAM 
+& DenseNet121 + localization (multiclass) 
+& Saliency over tumor regions \\
+\hline
+Gaur et al. (2022)~\cite{gaur2022explanation} 
+& SHAP + LIME 
+& CNN-based classifier 
+& Perturbation-based pixel/superpixel attribution \\
+\hline
+Roy et al. (2024)~\cite{roy2024explainable} 
+& Grad-CAM 
+& Deep ensemble features + SVM 
+& Saliency validation of decisions \\
+\hline
+Mandloi et al. (2024)~\cite{mandloi2024explainable} 
+& LRP 
+& EfficientNet-B0 (binary / multiclass) 
+& Layer-wise relevance redistribution \\
+\hline
+Wang et al. (2023)~\cite{wang2023chatcad} 
+& Auto-reporting + LLM (ChatCAD) 
+& Classifier + segmenter + report generator 
+& Textual + visual explanation \\
+\hline
+Manz et al. (2025)~\cite{manz2025do} 
+& Grad-CAM++
+& DL model for prostate cancer grading 
+& User-preference study on XAI overlays \\
+\hline
+\end{tabular}
+\label{tab:xai_mini_comparison}
+\end{table}
+
+
+\noindent
+Overall, the literature shows that saliency and attribution maps are now standard for MRI tumor classifiers, but their clinical value is limited when explanations merely restate the tumor location and may be unstable or anatomically implausible. Emerging directions therefore combine complementary evidence sources to improve interpretability and trust. This motivates the proposed hybrid framework in this thesis, where discriminative saliency is complemented by inference by generation reconstructions that act as structural validators and provide class conditional counterfactual evidence.
+
+
+
+\subsection{Summary of the State of the Art: Current Trends, Gaps, and Opportunities}
+
+
+The field of brain tumor prediction using MRI has evolved from classical pipelines based on handcrafted features and conventional classifiers (e.g., SVM, KNN, ANN) toward modern deep learning approaches. The introduction of Convolutional Neural Networks (CNNs) and transfer learning enabled automatic feature extraction and substantially improved classification performance, particularly in public and moderately sized cohorts \cite{Cheng2015,abiwinanda,deepak2019brain,Rehman2020}.\\
+
+In parallel, the adoption of generative models (GANs, StyleGAN, and more recently diffusion models) and explainable artificial intelligence (XAI) techniques (Grad-CAM, SHAP, LIME, LRP) has expanded the field beyond pure prediction toward data augmentation, structural validation, and clinically oriented interpretability \cite{GHASSEMI2020101678,li2020tumorgan,Fetty2020,gaur2022explanation,mandloi2024explainable,zuo2025multichannel}. Despite these advances, major challenges persist in achieving robust generalization under domain shift, preventing evaluation leakage, and integrating explanations that are clinically meaningful at scale.\\
+
+There are currently no standardized methodologies for training deep learning models in brain tumor MRI classification, and preprocessing or evaluation protocols differ widely across studies \cite{Rehman2020,Cheng2015}. Many publicly available datasets do not include patient level identifiers, making it difficult to enforce proper data partitioning. As a consequence, slices from the same patient often appear in both the training and testing splits, leading to \textit{data leakage}. This problem has been repeatedly highlighted as one of the main sources of artificially inflated scores in medical imaging benchmarks \cite{abiwinanda,deepak2019brain}. Because models may inadvertently learn subject specific anatomical traits rather than tumor related features, leakage threatens the validity of reported performance.\\
+
+Another critical challenge is that data scarcity prevents generative models from being trained with sufficient diversity, increasing the risk of \textit{mode collapse} and \textit{hallucinated artifacts} \cite{GHASSEMI2020101678,Fetty2020}. One mitigation strategy is to combine multiple datasets; however, doing so introduces substantial \textit{domain shift} due to variations in scanners, protocols, and resolution \cite{Zhan2021,zuo2025multichannel}. These discrepancies significantly affect generalization and reduce the reliability of synthetic augmentation.\\
+
+Existing studies rarely investigate how data leakage affects reported metrics, nor do they perform \textit{statistical comparisons} to determine whether differences between models are significant, as recommended in medical ML evaluation practice. As a result, many claims of SOTA performance remain unverified statistically.\\
+
+Although XAI methods are widely adopted for brain tumor MRI classification, most works rely on \textit{qualitative} inspection of visual explanations. Saliency based techniques such as Grad-CAM frequently highlight tumor regions, but several studies report activations over irrelevant anatomical structures, revealing low localization specificity \cite{roy2024explainable,gaur2022explanation}. This limitation motivates the need for \textit{hybrid explainability frameworks} such as reconstruction based structural evidence that move beyond pixel level heatmaps and provide anatomically grounded justification aligned with clinical reasoning.\\
+
+\textbf{Current Trends}
+
+\begin{itemize}
+    \item \textbf{Integration of Generative and Discriminative Models:} Generative models, particularly conditional GAN families, are increasingly incorporated for realistic data augmentation, class balancing, and latent space based structural validation. Their combination with discriminative CNNs supports both improved robustness and richer interpretability under limited data settings \cite{GHASSEMI2020101678,li2020tumorgan,Fetty2020}. 
+    
+    
+    \item \textbf{Advances in XAI and Clinical Acceptance:} Post hoc feature attribution methods such as Grad-CAM, SHAP, LIME, and LRP are routinely applied to visualize model evidence and support clinical inspection \cite{esmaeili2021explainable,gaur2022explanation,mandloi2024explainable}. Emerging studies have begun to explore how explanation quality affects clinician trust and usability, typically through small expert panels and Likert type evaluations \cite{manz2025do,wang2023chatcad}. 
+    
+\end{itemize}
+
+\textbf{Gaps and Limitations}
+
+\begin{itemize}
+    \item \textbf{Limited Interpretability and Systematic Clinical Validation:} 
+    Although XAI adoption is widespread, most explanations are post hoc and primarily pixel level. Such visualizations often confirm tumor localization rather than delivering additional actionable clinical insight. Large scale evidence linking XAI to improved clinical decision making or sustained trust remains limited, and evaluation protocols are still heterogeneous across studies \cite{gaur2022explanation,roy2024explainable,manz2025do}. 
+        
+    \item \textbf{Generalization, Robustness, and Leakage Control Issues:}
+    \begin{enumerate}
+        \item External validation is still uncommon. Most studies evaluate only on single dataset or closely related splits, leaving cross domain robustness insufficiently demonstrated \cite{Rehman2020,kumar2023braintumor}. 
+        \item Patient level data leakage remains a persistent risk in public cohorts, where multiple correlated slices per subject are often split at the image level. This practice can inflate reported metrics by enabling patient specific memorization rather than disease level generalization \cite{Cheng2015,abiwinanda,deepak2019brain}. 
+        \item Reliable assessment therefore requires patient disjoint partitions and stratified patient wise $k$-fold cross validation to preserve class balance while preventing leakage across folds \cite{5193232,Cheng2015}. 
+    \end{enumerate}
+    
+    \item \textbf{Constraints of Generative Models:} 
+    Despite progress, generating diagnostically faithful high resolution MRIs under small cohorts remains challenging. Early GAN augmentation is resolution limited and cohort dependent, while high capacity models (StyleGAN or diffusion) demand substantial data and compute to avoid mode collapse or hallucinated artifacts \cite{GHASSEMI2020101678,li2020tumorgan,Fetty2020,zuo2025multichannel}. Furthermore, large scale clinical validation of synthetic tumor realism and utility is still rare.
+    
+    \item \textbf{Data Scarcity and Limited Domain Diversity:} 
+    The literature repeatedly relies on a small number of public MRI datasets, typically without explicit multi-center diversity. The resulting lack of cross-scanner and cross-protocol variability restricts evaluation to narrow distributions and slows progress toward clinically robust deployment \cite{Cheng2015,sajjad2019multigrade,Rehman2020}. 
+
+    
+    \item \textbf{Lack of Statistical Testing to Compare Models:} 
+    Many studies report accuracy or F1-score improvements between models without performing statistical significance testing (t-tests, McNemar's test). Without such tests, it is unclear whether observed gains are meaningful or due to random variation. This weakens the reproducibility and reliability of comparative claims across studies.
+\end{itemize}
+
+
+\textbf{Opportunities and Future Directions}
+
+\begin{itemize}
+    \item \textbf{Hybrid Generative/Discriminative Frameworks:} 
+    Future work may benefit from principled hybridization, where class conditional generators provide both augmentation and structural evidence to validate discriminative predictions, particularly through inference by generation pipelines \cite{Fetty2020,pakdelmoez2024controllableretinalimagesynthesis}. 
+    
+\item \textbf{Improvements in Generative Models:} 
+Advances in generative models have led to the generation of higher quality images, with improved fidelity and class consistency, even when working with limited datasets \cite{oeldorf2019loganv2conditionalstylebasedlogo,dobler2022artcreationmulticonditionalstylegans,pakdelmoez2024controllableretinalimagesynthesis}. 
+
+    \item \textbf{Clinically Enriched Multimodal Datasets:} 
+    Collecting MRI datasets enriched with structured patient information (symptoms, demographics, clinical context) could support more robust and clinically aligned models by reflecting real diagnostic workflows. 
+    
+    \item \textbf{Multi-plane and Volumetric Learning:}
+    Joint modeling of axial, coronal, and sagittal views may better capture tumor morphology and reduce ambiguity inherent to single slice classification, provided that patient disjoint evaluation protocols are maintained \cite{bharathraj2025implementation3dcnn,ahmed2024vitgru}.
+
+    \item \textbf{Large Multimodal Models:}
+    Recent large foundation models such as GPT-4o and Gemini have demonstrated emerging capabilities in medical image understanding, including preliminary results on radiological image interpretation. However, these models currently lack the controlled class-conditional generation, fine-grained latent manipulation, and patient-level evaluation rigor required for clinical brain tumor classification. Their black-box nature and dependence on proprietary training data also limit reproducibility and clinical validation. Nevertheless, the rapid evolution of these models suggests they may become viable alternatives or complements to task-specific architectures in the near future.
+
+\end{itemize}
+
+\noindent
+Taken together, these trends and gaps indicate that progress depends not only on higher capacity predictors and generators, but also on leakage safe evaluation and on explanations that provide class consistent structural evidence. This directly motivates the proposed framework in this thesis, which integrates a conditional generator, classifier using StyleGAN, and XAI, all under strict patient-level control and supported by statistical tests. This approach ensures robust performance and clinically interpretable results.
+
+\subsection{Justification for the Proposed Approach}
+
+Although StyleGAN and other style based generators have been adopted in medical imaging, their role has been largely restricted to \emph{image synthesis} and \emph{data augmentation} to support discriminative classifiers. In contrast, existing works do not formulate brain tumor prediction as an explicit \emph{inference by generation} problem where the generator itself provides class evidence through latent inversion and class conditioned reconstruction. Consequently, the literature lacks a systematic framework that uses a conditional StyleGAN backbone not only to enlarge training cohorts, but also to validate or infer tumor class by comparing a real MRI slice against its class specific reconstructions.\\
+
+The proposed approach addresses this gap by leveraging StyleGAN-C as a generative prior for explainable classification. Compared to earlier GAN based augmentation methods that are typically constrained to low or moderate resolutions and operate in entangled latent spaces, StyleGAN introduces a mapping network that projects noise vectors $z$ into a disentangled latent space $\mathcal{W}$ (and its extended form $\mathcal{W}^+$). This design enables stable high resolution synthesis and semantically meaningful latent manipulation. Importantly, the disentangled and inversion friendly latent structure makes it feasible to project a real MRI slice into latent space and reconstruct it under alternative class conditions.\\
+
+Conditional StyleGAN variants further permit class controlled generation through label embeddings and truncation mechanisms, enabling a controllable trade off between fidelity and diversity while preserving class specific traits. Within the inference by generation paradigm, this conditional generator can produce a set of reconstructions $\{x_y\}$ for each candidate class $y$, which are then compared to the input image using perceptual and structural similarity criteria. The class whose reconstruction best matches the input provides \emph{generative evidence} that complements discriminative predictions and yields an interpretable, anatomically grounded validation of the decision.\\
+
+Therefore, adopting StyleGAN-C with $\mathcal{W}/\mathcal{W}^+$ inversion is justified by two aligned objectives of this thesis: 
+(i)  enabling high-quality image generation with class-conditional synthesis.
+(ii) providing explainability via reconstruction-based class validation and serving as an implicit classifier through latent-space inversion and perceptual similarity metrics.
+
+The gaps identified in the preceding review --- limited patient-level leakage control, scarce use of generative models for clinical validation, and the absence of integrated explainability mechanisms --- directly motivate the methodology presented in the following chapter.

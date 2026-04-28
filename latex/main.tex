@@ -1,0 +1,152 @@
+% Template:     Tesis LaTeX
+% Documento:    Archivo principal
+% Versión:      3.4.2 (07/02/2025)
+% Codificación: UTF-8
+%
+% Autor: Pablo Pizarro R.
+%        pablo@ppizarror.com
+%
+% Manual template: [https://latex.ppizarror.com/tesis]
+% Licencia MIT:    [https://opensource.org/licenses/MIT]
+
+% CREACIÓN DEL DOCUMENTO
+\documentclass[
+	spanish, % Idioma: spanish, english, etc.	
+	letterpaper, oneside
+]{book}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, matrix}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
+\usepackage{parskip}
+
+
+
+% INFORMACIÓN DEL DOCUMENTO
+\def\documenttitle {Explainable Brain Tumor Classification via Generation Using Conditional StyleGANs and CNNs}
+\def\documentsubtitle {}
+\def\degreetitle {
+	Tesis para optar al grado de magíster en ciencia de datos
+	\bigbreak\vspace{0.3cm}
+	Memoria para optar al título de ingeniero civil industrial
+}
+
+\def\universityname {Universidad de Chile}
+\def\universityfaculty {Facultad de Ciencias Físicas y Matemáticas}
+\def\universitydepartment {ESCUELA DE POSTGRADO Y EDUCACIÓN CONTINUA \\ Departamento de Ingeniería Industrial}
+\def\universitydepartmentimage {departamentos/uchile2}
+\def\universitydepartmentimagecfg {height=3cm}
+\def\universitylocation {Santiago de Chile}
+
+% INTEGRANTES, PROFESORES Y FECHAS
+\def\documentauthor {Junwei He Mai}
+\def\documentdate {\the\year}
+
+\def\portrait {
+	\begin{center}
+	\vspace{1.5cm} ~ \\
+	\MakeUppercase{\textbf{\documenttitle}} ~ \\
+	\vspace{1.5cm}
+	\MakeUppercase{\degreetitle} ~ \\
+	\vfill
+	\begin{tabular}{c}
+		\MakeUppercase{\textbf{\documentauthor}} \\ \\
+		\vspace{1.0cm} \\
+		PROFESOR GUÍA: \\
+		JUAN VELÁSQUEZ SILVA\\
+        \vspace{0.2cm} \\
+        PROFESOR CO-GUÍA: \\
+		YONG ZHANG \\
+        \vspace{0.5cm} \\
+		MIEMBROS DE LA COMISIÓN: \\
+		INGEBORG LÓPEZ LIBERONA \\
+		DENIS SAURÉ VALENZUELA \\
+        \vspace{0.5cm} \\
+		\MakeUppercase{\universitylocation} \\
+		\MakeUppercase{\documentdate}
+	\end{tabular}
+	\end{center}
+}
+
+
+
+
+% IMPORTACIÓN DEL TEMPLATE
+\input{template}
+
+% INICIO DE LAS PÁGINAS
+\begin{document}
+
+% PORTADA
+\templatePortrait
+
+% CONFIGURACIÓN DE PÁGINA Y ENCABEZADOS
+\templatePagecfg
+
+% RESUMEN O ABSTRACT
+
+\begin{abstractd}
+Brain tumors, including gliomas, meningiomas, and pituitary tumors, represent a major health issue due to their high mortality rate. Unlike other medical imaging domains, brain tumor MRI classification is particularly challenging due to the high inter-class visual similarity between tumor types (e.g., glioma vs.\ meningioma), the heterogeneous appearance of lesions across patients and acquisition protocols, and the limited availability of large-scale, patient-annotated public datasets. This thesis addresses the implementation of deep learning models for the classification of these tumors while ensuring strict control of data leakage between patients. Initially, an image generator is trained to create synthetic images of the desired tumor types, achieving a Fr\’echet Inception Distance (FID) of 46.08 (lower is better) and a 0.50 diagnostic accuracy by medical experts on the synthetic images, indicating that approximately half of the generated images reached sufficient quality for clinical interpretation while the remainder were deemed non-diagnostic --- a finding that highlights the current limitations of generative models in medical imaging. The Classification Accuracy Score (CAS) metric shows an accuracy of 0.923 for classifying these synthetic images. Different classification approaches are then explored, including latent space inversion with an accuracy of 0.832 using the e4e encoder, 0.838 through optimization, and 0.960 using a Convolutional Neural Network (CNN) with augmented synthetic data. eXplainable AI (XAI) techniques, such as heatmaps, are implemented to identify the most influential regions in the classifier’s decision-making process. For synthetic images, expert diagnostic confidence increased from 1.44 to 3.0 on the Likert scale when utilizing these maps. This thesis establishes a foundation for future research by introducing more stringent data leakage control and proposing new evaluation metrics such as CAS. Additionally, the integration of Human-in-the-Loop (HITL) is recommended for evaluating both augmented images and model decisions, leveraging XAI methods to provide interpretable insights. Finally, statistical tests are suggested to validate the differences between the models.\\
+
+\textbf{Keywords}: Brain Tumor Classification, StyleGAN, Synthetic Data Augmentation, Explainable AI, Data Leakage Control
+\end{abstractd}
+
+
+\renewcommand{\documenttitle}{Clasificación Explicable de Tumores Cerebrales mediante Generación con StyleGAN Condicional y Redes Neuronales Convolucionales}
+\begin{abstractd}
+Los tumores cerebrales, incluyendo gliomas, meningiomas y tumores pituitarios, representan un problema de salud importante debido a su alta tasa de mortalidad. A diferencia de otros dominios de imagen médica, la clasificación de tumores cerebrales por MRI es particularmente desafiante debido a la alta similitud visual entre tipos de tumor, la apariencia heterogénea de las lesiones entre pacientes y protocolos de adquisición, y la limitada disponibilidad de conjuntos de datos públicos anotados a nivel de paciente. Esta tesis aborda la implementación de modelos de \textit{deep learning} para la clasificación de estos tumores, asegurando un estricto control de fuga de datos entre pacientes. Primero, se entrena un generador de imágenes que permite la creación de imágenes sintéticas de los tipos de tumor deseados, logrando un \textit{Fr\'echet Inception Distance} (FID) de 46.08 (menor es mejor) y una precisión de 0.50 en el diagnóstico por parte de expertos médicos sobre las imágenes sintéticas, lo que indica que aproximadamente la mitad de las imágenes generadas alcanzaron calidad suficiente para interpretación clínica mientras que el resto fueron consideradas no diagnósticas --- un hallazgo que subraya las limitaciones actuales de los modelos generativos en imagen médica. La métrica \textbf{Classification Accuracy Score (CAS)} muestra una precisión de 0.923 para la clasificación de estas imágenes sintéticas. Luego, se exploran diferentes enfoques para clasificar estos tumores, incluyendo la inversión del espacio latente con un \textit{accuracy} de 0.832 utilizando el encoder \textit{e4e}, de 0.838 mediante optimización, y de 0.960 utilizando una Convolutional Neural Network (CNN) con datos sintéticos aumentados. Se implementan técnicas de eXplainable AI (XAI), como los mapas de calor, para identificar las regiones más influyentes en el proceso de toma de decisiones del clasificador. Para las imágenes sintéticas, la confianza diagnóstica del experto aumentó de 1.44 a 3.0 en la escala de Likert al utilizar estos mapas. Esta tesis establece una base para futuras investigaciones integrando un control más estricto de fuga de datos y proponiendo nuevas métricas de evaluación como el CAS. Además, se recomienda la integración de \textit{Human-in-the-Loop} (HITL) para evaluar tanto las imágenes utilizadas en el proceso de \textit{augmentación} como las decisiones tomadas por estos modelos de caja negra, aprovechando las técnicas de XAI para proporcionar interpretaciones claras y comprensibles. Por último, se sugiere la implementación de pruebas estadísticas para validar las diferencias entre los modelos.\\
+
+\textbf{Keywords}: Brain Tumor Classification, StyleGAN, Synthetic Data Augmentation, Explainable AI, Data Leakage Control
+
+
+\end{abstractd}
+\renewcommand{\documenttitle}{Explainable Brain Tumor Classification via Generation Using Conditional StyleGANs and CNNs}
+
+
+% DEDICATORIA
+\begin{dedicatory}
+	Para mi familia que lo ha dado todo por mi. \\	~ \\
+\end{dedicatory}
+
+% AGRADECIMIENTOS
+\begin{acknowledgments}
+
+Terminar esta tesis significa cumplir y culminar un ciclo que no empieza en la universidad, sino de mucho más atrás. Un proceso que nos llevó más de una década y finalmente se pudo lograr gracias a mi familia y principalmente a mi mamá, que me pudo otorgar todas las herramientas y facilidades para poder llegar hasta acá. Soy muy consciente y estoy muy agradecido del enorme esfuerzo por todo el apoyo que me han dado.\\
+
+Quiero ofrecer mi agradecimiento a todos los compañeros que me ayudaron a lo largo de la carrera. Tuve una suerte tremenda al coincidir grandes personas que no se molestaron ni un momento en prestarme ayuda. Mis amigos Gustavo e Ignacio que siempre estuvieron ahí para cualquier cosa. Los sureños Kalen, Joaco y a todos los de la rama que siempre me acompañaron con el pinpon. Y muchas otras más personas que hicieron mi carrera mucho más divertida.\\
+
+En tercer lugar quiero agradecer a la Universidad de Chile, al departamento de Industrias y al Magister de Ciencia de Datos, por todos los conocimientos que me ha brindado gracias a su enorme planta de profesores de altisima calidad.\\
+
+A la doctora Ingeborg por su tiempo y dedicación para aportar una mirada clínica al proyecto que fue fundamental para respaldar los resultados.\\
+
+Por último, muchas gracias a mis profesores Juan Velásquez y Yong Zhang por confiar en mi y guiarme durante todo el proceso. Valoro mucho el tiempo y la disposición a pesar de la gran diferencia horaria.
+\end{acknowledgments}
+
+% TABLA DE CONTENIDOS - ÍNDICE
+\templateIndex
+
+% CONFIGURACIONES FINALES
+\templateFinalcfg
+
+% ======================= INICIO DEL DOCUMENTO =======================
+
+\include{chapters/introduction}
+\include{chapters/teoricalbackground}
+\include{chapters/literaturereview}
+\include{chapters/methodology}
+\include{chapters/results}
+\include{chapters/discussion}
+\include{chapters/conclusion}
+
+\backmatter
+
+{\small
+\setlength{\bibsep}{2pt plus 1pt minus 1pt}
+\bibliographystyle{apa}           % O otro estilo como plainnat, ieee, etc.
+\bibliography{chapters/reference}
+}
+% FIN DEL DOCUMENTO
+
+\input{chapters/appendix}
+\end{document}
