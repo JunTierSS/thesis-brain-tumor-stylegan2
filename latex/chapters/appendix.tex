@@ -1,0 +1,221 @@
+\appendix
+\chapter{Annex}
+\section{Annex A: StyleGAN-C Training}
+
+\begin{footnotesize}
+\begin{longtable}{@{}lrrll@{}}
+\caption{Generator StyleGAN2-ADA.}\\
+\toprule
+\textbf{Generator} & \textbf{Parameters} & \textbf{Buffers} & \textbf{Output shape} & \textbf{Datatype} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Generator} & \textbf{Parameters} & \textbf{Buffers} & \textbf{Output shape} & \textbf{Datatype} \\
+\midrule
+\endhead
+mapping.embed        & 2{,}048   & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc0          & 524{,}800 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc1          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc2          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc3          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc4          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc5          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc6          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping.fc7          & 262{,}656 & --     & \texttt{[32, 512]}            & float32 \\
+mapping              & --        & 512    & \texttt{[32, 14, 512]}        & float32 \\
+synthesis.b4.conv1   & 2{,}622{,}465 & 32 & \texttt{[32, 512, 4, 4]}      & float32 \\
+synthesis.b4.torgb   & 263{,}169 & --     & \texttt{[32, 1, 4, 4]}        & float32 \\
+synthesis.b4:0       & 8{,}192   & 16     & \texttt{[32, 512, 4, 4]}      & float32 \\
+synthesis.b4:1       & --        & --     & \texttt{[32, 512, 4, 4]}      & float32 \\
+synthesis.b8.conv0   & 2{,}622{,}465 & 80 & \texttt{[32, 512, 8, 8]}      & float32 \\
+synthesis.b8.conv1   & 2{,}622{,}465 & 80 & \texttt{[32, 512, 8, 8]}      & float32 \\
+synthesis.b8.torgb   & 263{,}169 & --     & \texttt{[32, 1, 8, 8]}        & float32 \\
+synthesis.b8:0       & --        & 16     & \texttt{[32, 512, 8, 8]}      & float32 \\
+synthesis.b8:1       & --        & --     & \texttt{[32, 512, 8, 8]}      & float32 \\
+synthesis.b16.conv0  & 2{,}622{,}465 & 272 & \texttt{[32, 512, 16, 16]}    & float32 \\
+synthesis.b16.conv1  & 2{,}622{,}465 & 272 & \texttt{[32, 512, 16, 16]}    & float32 \\
+synthesis.b16.torgb  & 263{,}169 & --     & \texttt{[32, 1, 16, 16]}      & float32 \\
+synthesis.b16:0      & --        & 16     & \texttt{[32, 512, 16, 16]}    & float32 \\
+synthesis.b16:1      & --        & --     & \texttt{[32, 512, 16, 16]}    & float32 \\
+synthesis.b32.conv0  & 2{,}622{,}465 & 1{,}040 & \texttt{[32, 512, 32, 32]} & float16 \\
+synthesis.b32.conv1  & 2{,}622{,}465 & 1{,}040 & \texttt{[32, 512, 32, 32]} & float16 \\
+synthesis.b32.torgb  & 263{,}169 & --     & \texttt{[32, 1, 32, 32]}      & float16 \\
+synthesis.b32:0      & --        & 16     & \texttt{[32, 512, 32, 32]}    & float16 \\
+synthesis.b32:1      & --        & --     & \texttt{[32, 512, 32, 32]}    & float32 \\
+synthesis.b64.conv0  & 2{,}622{,}465 & 4{,}112 & \texttt{[32, 512, 64, 64]} & float16 \\
+synthesis.b64.conv1  & 2{,}622{,}465 & 4{,}112 & \texttt{[32, 512, 64, 64]} & float16 \\
+synthesis.b64.torgb  & 263{,}169 & --     & \texttt{[32, 1, 64, 64]}      & float16 \\
+synthesis.b64:0      & --        & 16     & \texttt{[32, 512, 64, 64]}    & float16 \\
+synthesis.b64:1      & --        & --     & \texttt{[32, 512, 64, 64]}    & float32 \\
+synthesis.b128.conv0 & 1{,}442{,}561 & 16{,}400 & \texttt{[32, 256, 128, 128]} & float16 \\
+synthesis.b128.conv1 & 721{,}409 & 16{,}400 & \texttt{[32, 256, 128, 128]} & float16 \\
+synthesis.b128.torgb & 131{,}585 & --     & \texttt{[32, 1, 128, 128]}    & float16 \\
+synthesis.b128:0     & --        & 16     & \texttt{[32, 256, 128, 128]}  & float16 \\
+synthesis.b128:1     & --        & --     & \texttt{[32, 256, 128, 128]}  & float32 \\
+synthesis.b256.conv0 & 426{,}369 & 65{,}552 & \texttt{[32, 128, 256, 256]} & float16 \\
+synthesis.b256.conv1 & 213{,}249 & 65{,}552 & \texttt{[32, 128, 256, 256]} & float16 \\
+synthesis.b256.torgb & 65{,}793  & --     & \texttt{[32, 1, 256, 256]}    & float16 \\
+synthesis.b256:0     & --        & 16     & \texttt{[32, 128, 256, 256]}  & float16 \\
+synthesis.b256:1     & --        & --     & \texttt{[32, 128, 256, 256]}  & float32 \\
+\midrule
+\textbf{Total}       & \textbf{30{,}292{,}628} & \textbf{175{,}568} & -- & -- \\
+\bottomrule
+\end{longtable}
+\newpage
+\begin{longtable}{@{}lrrll@{}}
+\caption{Discriminator StyleGAN2-ADA}\\
+\toprule
+\textbf{Discriminator} & \textbf{Parameters} & \textbf{Buffers} & \textbf{Output shape} & \textbf{Datatype} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Discriminator} & \textbf{Parameters} & \textbf{Buffers} & \textbf{Output shape} & \textbf{Datatype} \\
+\midrule
+\endhead
+b256.fromrgb   & 256      & 16  & \texttt{[32, 128, 256, 256]} & float16 \\
+b256.skip      & 32{,}768 & 16  & \texttt{[32, 256, 128, 128]} & float16 \\
+b256.conv0     & 147{,}584 & 16 & \texttt{[32, 128, 256, 256]} & float16 \\
+b256.conv1     & 295{,}168 & 16 & \texttt{[32, 256, 128, 128]} & float16 \\
+b256           & --       & 16  & \texttt{[32, 256, 128, 128]} & float16 \\
+b128.skip      & 131{,}072 & 16 & \texttt{[32, 512, 64, 64]}   & float16 \\
+b128.conv0     & 590{,}080 & 16 & \texttt{[32, 256, 128, 128]} & float16 \\
+b128.conv1     & 1{,}180{,}160 & 16 & \texttt{[32, 512, 64, 64]} & float16 \\
+b128           & --       & 16  & \texttt{[32, 512, 64, 64]}   & float16 \\
+b64.skip       & 262{,}144 & 16 & \texttt{[32, 512, 32, 32]}   & float16 \\
+b64.conv0      & 2{,}359{,}808 & 16 & \texttt{[32, 512, 64, 64]} & float16 \\
+b64.conv1      & 2{,}359{,}808 & 16 & \texttt{[32, 512, 32, 32]} & float16 \\
+b64            & --       & 16  & \texttt{[32, 512, 32, 32]}   & float16 \\
+b32.skip       & 262{,}144 & 16 & \texttt{[32, 512, 16, 16]}   & float16 \\
+b32.conv0      & 2{,}359{,}808 & 16 & \texttt{[32, 512, 32, 32]} & float16 \\
+b32.conv1      & 2{,}359{,}808 & 16 & \texttt{[32, 512, 16, 16]} & float16 \\
+b32            & --       & 16  & \texttt{[32, 512, 16, 16]}   & float16 \\
+b16.skip       & 262{,}144 & 16 & \texttt{[32, 512, 8, 8]}     & float32 \\
+b16.conv0      & 2{,}359{,}808 & 16 & \texttt{[32, 512, 16, 16]} & float32 \\
+b16.conv1      & 2{,}359{,}808 & 16 & \texttt{[32, 512, 8, 8]}   & float32 \\
+b16            & --       & 16  & \texttt{[32, 512, 8, 8]}     & float32 \\
+b8.skip        & 262{,}144 & 16 & \texttt{[32, 512, 4, 4]}     & float32 \\
+b8.conv0       & 2{,}359{,}808 & 16 & \texttt{[32, 512, 8, 8]}   & float32 \\
+b8.conv1       & 2{,}359{,}808 & 16 & \texttt{[32, 512, 4, 4]}   & float32 \\
+b8             & --       & 16  & \texttt{[32, 512, 4, 4]}     & float32 \\
+mapping.embed  & 2{,}048  & --  & \texttt{[32, 512]}           & float32 \\
+mapping.fc0    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc1    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc2    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc3    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc4    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc5    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc6    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+mapping.fc7    & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+b4.mbstd       & --       & --  & \texttt{[32, 513, 4, 4]}     & float32 \\
+b4.conv        & 2{,}364{,}416 & 16 & \texttt{[32, 512, 4, 4]} & float32 \\
+b4.fc          & 4{,}194{,}816 & -- & \texttt{[32, 512]}        & float32 \\
+b4.out         & 262{,}656 & -- & \texttt{[32, 512]}           & float32 \\
+b4             & --       & --  & \texttt{[32, 1]}             & float32 \\
+\midrule
+\textbf{Total} & \textbf{31{,}229{,}312} & \textbf{416} & -- & -- \\
+\bottomrule
+\end{longtable}
+\end{footnotesize}
+
+\section{Annex B: e4e Training}
+
+The experiment utilized an encoder-based approach with the Encoder4Editing architecture for latent space manipulation. The training process involved using the StyleGAN2 backbone pre-trained on the FFHQ dataset and fine-tuned for the brain MRI dataset. The model training was designed to handle a number of hyperparameters for effective learning, evaluation, and model optimization. The following hyperparameters were used to control the model's performance, regularization, and learning:
+
+\begin{itemize}
+    \item \textbf{Batch size} was set to 8 to handle a manageable amount of data per step.
+    \item \textbf{Optimizer} used was \textbf{Ranger}, a variant of the Adam optimizer, known for stability and improved performance in generative tasks.
+    \item \textbf{Learning rate} was set to 0.0001 to prevent overfitting and to stabilize training.
+    \item \textbf{Progressive training} was adopted, starting from 20,000 steps, with subsequent updates every 2,000 steps.
+    \item \textbf{Latent space manipulation} was used to generate synthetic MRI images with constraints based on class-conditional features from the encoder.
+    \item \textbf{Loss functions} included \textbf{LPIPS} (with AlexNet feature extractor) for perceptual similarity, \textbf{L2} regularization, and \textbf{W-discriminator} losses for improved stability.
+\end{itemize}
+
+The experiment setup was aimed at ensuring efficient training while using the encoder to manipulate the latent space to generate and edit MRI images.
+
+\subsection{Hyperparameters}
+
+\begin{table}[ht]
+\centering
+\caption{Hyperparameters used for training the Encoder4Editing model on the brain MRI dataset.}
+\label{tab:hyperparameters}
+\begin{tabular}{l l}
+\toprule
+\textbf{Parameter}                & \textbf{Value}   \\           \hline
+\textbf{Batch Size}                & 8      \\                    
+\textbf{Board Interval}            & 50       \\                                       
+\textbf{D Regularization Interval}& 16           \\                                  
+\textbf{Dataset Type}              & brain\_mri\_encode  \\                                
+\textbf{Delta Norm}                & 2        \\                                            
+\textbf{Delta Norm Lambda}         & 0.0002      \\                                       
+\textbf{Encoder Type}              & Encoder4Editing   \\                                
+\textbf{ID Lambda}                 & 0.5       \\                                       
+\textbf{Image Interval}            & 100   \\                                             
+\textbf{Keep Optimizer}            & False   \\                                            
+\textbf{L2 Lambda}                 & 1.0    \\                                            
+\textbf{Learning Rate}             & 0.0001   \\                                          
+\textbf{LPIPS Lambda}              & 0.8     \\                                            
+\textbf{LPIPS Type}                & alex     \\                                         
+\textbf{Max Steps}                 & 30000   \\                                             
+\textbf{Optimizer}                 & ranger   \\                                           
+\textbf{Progressive Start}         & 20000      \\                                      
+\textbf{Progressive Step Every}    & 2000      \\                                        
+\textbf{R1 Regularization}         & 10        \\                                       
+\textbf{Save Interval}             & None     \\                                         
+\textbf{Start From Latent Average} & True    \\                                          
+\textbf{StyleGAN Size}             & 256     \\                                           
+\textbf{StyleGAN Weights}          & stylegan2-ffhq-config-f.pt\\  
+\textbf{Test Batch Size}           & 4        \\                                        
+\textbf{Test Workers}              & 4      \\                                           
+\textbf{Train Decoder}             & False    \\                                        
+\textbf{Update Param List}         & None    \\                                            
+\textbf{Use W Pool}                & True    \\                                       
+\textbf{Validation Interval}       & 10000   \\                                          
+\textbf{W Discriminator Lambda}    & 0.1      \\                                       
+\textbf{W Discriminator Learning Rate} & 0.0001       \\                                  
+\textbf{W Pool Size}               & 50        \\                                       
+\textbf{Workers}                   & 8        \\                                         
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\clearpage
+\section{Annex C: Forms}
+
+
+The following images show examples of the forms used by the expert neuroradiologists to evaluate the generated MRI images. These forms were designed to assess the realism, diagnostic utility, and interpretability of the images, as well as the effectiveness of Grad-CAM visualizations in supporting the decision-making process. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Template-Tesis-dii/img/gradcamexcel.png}  % Ruta de la imagen
+    \caption{Example of the form used to evaluate Grad-CAM's utility for medical professionals.}
+    \label{fig:form_gradcam}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Template-Tesis-dii/img/egtruncationword.png}
+    \caption{Example of the answers form used to evaluate truncations images.}
+    \label{fig:form_truncation_word}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Template-Tesis-dii/img/egtruncationexcel.png}
+    \caption{Example of the form used to evaluate truncations images.}
+    \label{fig:form_truncation_excel}
+\end{figure}
+
+
+\clearpage
+\section{Annex D: XAI Answers}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{Template-Tesis-dii/img/respuestasinge.png}
+    \caption{XAI answers form.}
+    \label{fig:form_xai_answers}
+\end{figure}

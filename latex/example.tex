@@ -1,0 +1,115 @@
+% Template:     Tesis LaTeX
+% Documento:    Archivo de ejemplo
+% Versión:      3.4.2 (07/02/2025)
+% Codificación: UTF-8
+%
+% Autor: Pablo Pizarro R.
+%        pablo@ppizarror.com
+%
+% Manual template: [https://latex.ppizarror.com/tesis]
+% Licencia MIT:    [https://opensource.org/licenses/MIT]
+
+% ------------------------------------------------------------------------------
+% NUEVO CAPÍTULO
+% ------------------------------------------------------------------------------
+% A diferencia de Template-Informe, Template-Tesis requiere el uso de capítulos; las secciones, subsecciones, etc son parte de un capítulo. Se recomienda el uso de un capítulo en un archivo distinto
+\chapter{Introduction}
+
+\section{Clinical and technical motivation}
+\section{Problem definition: brain tumor classification in MRI}
+\section{Limitations of conventional discriminative models/ explaining discriminative and discriminative models}
+\section{Proposed solution: generative inference + explainability}
+\section{General and specific objectives}
+\section{Hypothesis}
+
+
+% ------------------------------------------------------------------------------
+% NUEVO CAPÍTULO
+% ------------------------------------------------------------------------------
+\chapter{Background}
+
+\section{Basic neuroanatomy and brain tumor types}
+\section{Magnetic Resonance Imaging (MRI): principles and challenges}
+\section{Clinical diagnostic processes}
+\section{Role of artificial intelligence in medical imaging}
+
+	
+
+
+
+% ------------------------------------------------------------------------------
+% NUEVO CAPÍTULO
+% ------------------------------------------------------------------------------
+\chapter{Literature Review}
+
+\section{Discriminative models (CNN, Transfer Learning)}
+
+\subsection{Comparative table: discriminative classifiers in MRI}
+
+\section{Generative models (GAN, CGAN, VAE, Diffusion Models, Normalizing Flows)}
+
+\subsection{Comparative table: generative classifiers in MRI
+}
+\section{Classification by generation (Inference by Generation)}
+
+\section{Explainable AI (XAI) in medical imaging (Grad-CAM, LIME, SHAP,llm)}
+
+\section{SR methods}
+\section{human in the loop}
+\section{Existing comparative studies and research gaps}
+
+\section{Justification for the proposed approach}
+\
+% ------------------------------------------------------------------------------
+% REFERENCIAS, revisar configuración \stylecitereferences
+% ------------------------------------------------------------------------------
+\bibliography{library}
+
+
+% ------------------------------------------------------------------------------
+% ANEXO
+% Existe adicionalmente el entorno \begin{appendixd} que permite insertar
+% \chapter y el entorno \begin{appendixdtitle}[style1] (4 estilos diferentes),
+% el cual acepta \chapter y escribe el título de anexos encima
+% ------------------------------------------------------------------------------
+\begin{appendixs}
+	
+	\section{Cálculos realizados}
+
+	\subsection{Metodología}
+	\lipsum[1-2]
+
+	% Imagen, se numerará automáticamente con la letra del anexo según
+	% la configuración \appendixindepobjnum
+	\insertimage[\label{img:anexo-2}]{ejemplos/test-image.png}{scale=0.25}{Imagen en anexo.}
+
+	\subsection{Resultados}
+	\lipsum[10]
+
+	% Tablas
+	\enabletablerowcolor[2] % Activa el color de celda
+	\begin{table}[H]
+		\begin{threeparttable}
+		\centering
+		\caption{Tabla de cálculo.}
+		\begin{tabular}{cccC{4cm}}
+			\hline
+			\textbf{Elemento} & $\epsilon_i$ & \textbf{Valor} & \textbf{Descripción} \bigstrut \\
+			\hline
+			A     & 10    & 3,14$\pi$ & Valor muy interesante\tnote{a} \\
+			B     & 20    & 6 & Segundo elemento \\
+			C     & 30    & 7 & Tercer elemento\tnote{1} \\
+			D     & 150    & 10 & Sin descripción \\
+			E     & 0    & 0 & Cero \\
+			\hline
+			\end{tabular}
+		\begin{tablenotes}
+			\item[a] Este elemento tiene una descripción debajo de la tabla
+			\item[1] Más comentarios
+		\end{tablenotes}
+		\end{threeparttable}
+		\label{tab:anexo-1}
+	\end{table}
+	\disabletablerowcolor % Desactiva el color de celda
+
+\end{appendixs}

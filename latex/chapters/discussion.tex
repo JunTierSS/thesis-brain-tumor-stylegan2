@@ -1,0 +1,383 @@
+\chapter{Discussion}
+
+\paragraph{Leakage Control.}
+It is important to emphasize that all findings reported must be interpreted under a strict patient-level data leakage control. All training and test splits are performed such that no MRI slices originating from the same patient appear across different folds. This constraint reflects a realistic clinical deployment scenario and prevents overly optimistic performance estimates driven by implicit memorization of patient-specific anatomical features. Notably, a significant portion of the existing literature on brain tumor classification using deep learning does not explicitly enforce this level of leakage control, making direct comparisons based solely on accuracy potentially misleading. By adopting this rigorous protocol, the present work prioritizes methodological validity and generalization over raw performance figures.
+
+\paragraph{External validity and generalization.}
+A key limitation of this study is that all experiments were conducted on a single public dataset. As a result, the reported gains in accuracy, calibration, and explainability are only validated under one acquisition protocol and a single institutional setting. This lack of external validation restricts the generalization of the findings, and it remains unclear how the proposed generative/discriminative pipeline would perform under different scanners, protocols, or patient populations. Future work should therefore prioritize multi-centre external validation to confirm whether the observed improvements transfer beyond the Figshare dataset.
+
+
+
+
+\section{Interpretation of Results}
+
+
+\subsection{Experiment 1}
+
+Experiment~1 establishes the generative foundation of the proposed framework. Importantly, the objective of this experiment is not to optimize image generation as an isolated goal, but to employ generative modeling as an \textbf{epistemological instrument}. In this context, the class-conditional StyleGAN-C is used to (i) assess the clinical plausibility and structural coherence of synthesized MRI slices, (ii) enable inference-by-generation and latent manipulation mechanisms for classification, and (iii) support discriminative learning under limited data availability, class imbalance, and strict patient-level data leakage control.
+
+Training the class-conditional StyleGAN-C at a target resolution of $256\times256$ proved to be computationally demanding. In practice, a minimum of 16\,GB of GPU memory was required to train the model reliably, and 24\,GB was found to be preferable in order to avoid instability and excessive reliance on gradient accumulation. Despite this cost, the resulting synthetic images exhibit visually convincing quality: as illustrated in Figure~\ref{fig:stylegan_real_vs_fake}, it is not immediately obvious which samples are real and which are generated. This stands in clear contrast to the $64\times64$ DCGAN baseline \cite{GHASSEMI2020101678}, where global anatomical distortions and lack of fine structure make the synthetic slices easily distinguishable from real MRIs. In comparison, StyleGAN-C is able to reproduce tumor-present brain slices with realistic anatomical context and plausible tumor morphology.\\
+
+A systematic truncation study further revealed how the truncation parameter $\psi$ modulates both the appearance of the tumor and the surrounding anatomy. For the reduced dataset, Figure~\ref{fig:stylegan_class_vs_truncation1} shows that, within the meningioma class, the apparent tumor region tends to shrink as $\psi$ increases, while pituitary slices become progressively more distorted at higher truncation values. For the generator trained on the complete dataset (Figure~\ref{fig:stylegan_class_vs_truncation2}), the behavior is partly reversed: in meningioma, the tumor is barely visible at $\psi=0.8$ but becomes more clearly delineated as truncation increases, and for pituitary cases the extent and shape of the lesion region change markedly across $\psi$. These qualitative patterns confirm that truncation does not only control global sample diversity but can substantially alter tumor extent and local structure. A natural direction for future work is to constrain the generator such that truncation (or analogous controls in latent space) modifies only the tumor morphology while preserving the surrounding brain anatomy.\\
+
+Latent inversion was also explored as a way of generating class-conditional interpolations starting from real MRIs. Given an input slice and a target class, the image was projected into the latent space and then iteratively steered towards the corresponding class prototype, producing smooth trajectories between the original and the target configuration. As shown in Figure~\ref{fig:stylegan_inversion_only}, these interpolated sequences preserve overall anatomical structure while progressively modifying tumor appearance. The inverted and class-steered images were subsequently reused in Experiment~2A as inputs to a classifier trained on generated trajectories, and they also served as the basis for computing reconstruction-based image quality metrics.\\
+
+To quantitatively compare these generated images against real data and against the broader state of the art, a combination of paired and distributional metrics was employed. Paired measures (PSNR, SSIM and LPIPS) were computed on aligned real--interpolated pairs within the same anatomical plane, thereby avoiding domain shift between axial, sagittal and coronal views. These metrics capture how faithfully the generator can reconstruct or transform a given slice while preserving salient structures. In contrast, the Fréchet Inception Distance (FID) was used to compare the global distributions of real and interpolated images without requiring explicit pairing. The overall FID value for paired reconstructions is approximately 104, which is relatively high compared to some reports in the literature; however, this is largely explained by the experimental protocol, which compares interpolated (not unconditionally sampled) images. In contrast, the global FID for unconditionally sampled images at $\psi = 1.0$ is 46.08, as reported in Table~\ref{tab:fid_global_truncation}.\\
+
+A more fine-grained analysis by class pairs provides additional insight into Table~\ref{tab:all_combos_psnr_ssim_lpips}. When interpolations are generated towards the same class as the original slice (diagonal setting), PSNR, SSIM and LPIPS all improve relative to cross-class transformations, with the notable exception of meningioma. For meningioma, the best quantitative scores are obtained when interpolating towards glioma, suggesting that the generator (and, by extension, the underlying dataset) tends to conflate aspects of these two tumor types in latent space. This observation is consistent with the classification experiments, where glioma and meningioma are the most frequently confused classes, and indicates that the generative model inherits the same class ambiguity present in the discriminative setting.\\
+
+Finally, unconditional sampling experiments were conducted for the reduced dataset generator by drawing 600 synthetic images per class at different truncation values and comparing their distribution to that of the real slices. In this unpaired scenario, only FID could be computed. The results in Table~\ref{tab:fid_global_truncation} show that $\psi = 1.0$ yields the lowest FID of 46.08, corresponding to samples that remain closest to the training distribution, while FID systematically degrades as $\psi$ increases. This behavior is expected: higher truncation values inject additional latent noise and push samples further away from the core of the learned manifold, thereby widening the gap between real and synthetic distributions. Since no one-to-one pairing is available in this setting, PSNR, SSIM and LPIPS cannot be meaningfully computed, and FID remains the primary quantitative indicator. 
+
+Overall, Experiment~1 demonstrates that StyleGAN-C can produce anatomically plausible tumor MRIs and that truncation and inversion provide meaningful control over tumor appearance, albeit with non-trivial effects on fidelity and class separability that warrant further investigation.\\
+
+
+\subsection{Experiment 2A}
+
+Experiment~2A investigated whether latent inversion with StyleGAN-C could be used not only to generate counterfactual trajectories, but also to perform tumor classification at the patient level. Due to computational constraints, only one representative slice per patient was selected. As reported in Table~\ref{tab:ensemble_overall}, the CNN-based counterfactual classifier reached a patient-level F1-score of approximately $0.852$ and a accuracy of $0.838$. In this setting, multiple class-conditional counterfactual images were generated for each patient and passed through the CNN trained in Experiment~2C (reduced dataset, truncation $\psi = 1.3$); the resulting class probabilities were aggregated to obtain a single probability vector per patient. This evaluation corresponds to a CAS-like metric, in which only synthetic, class-conditioned samples are presented to a fixed classifier.\\
+
+When this CAS value is compared to the CAS scores obtained in Experiment~2C for synthetic images generated directly from the StyleGAN-C model (between $0.895$ and $0.923$), it becomes apparent that counterfactual trajectories are somewhat less informative than standard synthetic samples. Nevertheless, the counterfactual classifier is far from trivial: its F1-score and accuracy remain clearly above chance, indicating that the inversion pipeline preserves a substantial amount of discriminative information. The main limitation is computational: classifying patients via counterfactual generation requires inverting all selected slices into the latent space and generating full trajectories, which is orders of magnitude slower than applying a conventional CNN as in Experiment~2C, where inference can be completed in minutes rather than days.\\
+
+An alternative classification by generation strategy based on LPIPS was also explored. The procedure mirrored the CNN-based approach, but instead of relying on class probabilities from a discriminative model, the decision was made by selecting the class whose counterfactual reconstruction achieved the lowest LPIPS distance to the original image. Although the resulting metrics were lower than those of the CNN-based counterfactual classifier ($0.765$ accuracy and $0.757$ F1), they were not negligible, suggesting that perceptual similarity in latent space can also encode useful class information. Consistent with the patterns observed in Experiments~2B and~2C, the confusion matrices for both the CNN-based and LPIPS-based counterfactual classifiers show that most misclassifications occur between glioma and meningioma, whereas pituitary tumors are rarely confused with the other classes. Finally, the counterfactual trajectories were visualized as videos composed of 120 frames per inversion and per target class. These videos qualitatively illustrate how the anatomy and the tumor appearance evolve as the latent code moves from the original class towards each target class (see Figure~\ref{fig:counterfactual_120frames} and Figure~\ref{fig:counterfactual_120frames1}). The first image at the top left represents the original image, while the one at the bottom right shows the counterfactual. The generated images preserve the structure of the brain, ensuring that the anatomical integrity is maintained while transitioning towards the target class.\\
+
+
+In summary, Experiment~2A shows that classification by counterfactual generation via latent inversion is feasible and yields non-trivial performance, but remains less accurate and substantially more expensive than a conventional CNN classifier. The CAS comparison suggests that counterfactual trajectories are slightly less informative than standard synthetic samples generated directly by StyleGAN-C, and both CNN and LPIPS variants exhibit the same glioma--meningioma confusion pattern observed in other experiments. The main added value of this approach therefore lies not in raw predictive performance, but in the counterfactual videos it produces, which offer a rich, temporally resolved visual explanation of how tumor appearance can evolve across classes. From a methodological perspective, classification by generation is best understood as a complementary tool rather than a replacement for discriminative CNNs. While counterfactual classification underperforms direct synthetic generation for tumor classification (F1 0.852 vs 0.895--0.923), its primary value lies in providing interpretable visual explanations rather than raw predictive performance. Its main contribution lies in enabling the inspection of anatomically plausible counterfactuals, allowing clinicians to verify that predictions are grounded in clinically meaningful tumor anatomy rather than artefactual cues. \\
+
+
+
+\subsection{Experiment 2B}
+
+While Experiment~2A demonstrated that latent inversion can achieve non-trivial classification at the patient level, the computational cost of per-patient inversion limits scalability. Experiment~2B therefore adopts a slice-level approach, evaluating whether pre-computed feature representations --- from a CNN, a supervised encoder, and the e4e encoder --- capture discriminative tumor information amenable to linear classification.
+
+Experiment~2B was designed to investigate feature extraction in greater depth using three models: a CNN classifier, a supervised encoder and the e4e encoder. When evaluated with an SVM, the results reported in Table \ref{tab:exp2b_all_metrics} show that the best-performing model is the supervised encoder with a ResNet-18 backbone, followed by the CNN and, finally, e4e. More concretely, the supervised encoder achieves an accuracy of 0.947, the CNN features reach 0.937, and the e4e-based features obtain 0.832. Although e4e attains the lowest accuracy among the three, its performance is still non-trivial and cannot be regarded as negligible. This indicates that feature extraction is a viable strategy for tumor classification, but also that the amount of discriminative information captured by each model differs.\\
+
+
+Across all three models, the pituitary class consistently achieves the highest metrics, and the confusion matrix in Table \ref{tab:cm_all_models} shows that glioma and meningioma are frequently confused with one another, in line with the behavior observed in the other experiments. From a computational perspective, training the supervised CNN encoder requires only a few minutes, whereas fine tuning e4e takes several hours. Moreover, in this experiment e4e was trained for only 30,000 steps, so it is plausible that longer training could lead to better metrics, at the cost of even higher computational effort.\\
+
+
+To understand the origin of these differences, a PCA analysis using the first three principal components was performed. As shown in Table~\ref{tab:pca_variance}, the supervised encoder produces 512-dimensional feature vectors, for which the first three components explain almost 100\% of the variance, whereas the CNN produces 2048-dimensional features with around 72\% of variance explained by the first three components, and e4e yields 7168-dimensional features with approximately 66\% explained. This suggests that, as the feature dimensionality decreases, the representation space becomes more compact and structured, allowing the leading principal components to capture a larger proportion of the relevant information. This is a manifestation of the \emph{curse of dimensionality}: in the high-dimensional e4e space (7168 dimensions), the class-discriminative signal is spread thinly across a large number of axes, making it difficult for a linear classifier to recover a compact decision boundary. In contrast, the supervised encoder compresses the relevant information into just 512 dimensions, concentrating the class-specific variance into a small number of components. This pattern is directly reflected in the classification results, where the ordering of the metrics (supervised encoder $>$ CNN $>$ e4e) is consistent with the degree of variance explained by the first components.\\
+
+To further analyses the effect of dimensionality, all three feature spaces were reduced to 128 dimensions using PCA and re-evaluated with an SVM, obtaining the following accuracies: CNN = 0.9352, e4e = 0.8013 and encoder = 0.9484. These results indicate that the limitation does not lie in the SVM itself or in its decision function, but rather in the quality of the extracted features. In particular, the e4e W\textsuperscript{+} space does not appear to be disentangled with respect to tumor type; instead, it captures more general visual attributes, and the tumor-class signal is diluted across the original 7168 dimensions, making linear classification substantially more difficult.\\
+
+To gain further insight into the geometry of the feature spaces, a three-dimensional PCA analysis was performed for each configuration and split (train and test). The resulting projections (Figure~\ref{fig:pca_cnn_train}) reveal that, for each feature configuration, the PCA plots for the training and test splits are qualitatively very similar: even though patient identifiers are completely disjoint between train and test, the corresponding samples occupy comparable regions in feature space. This suggests that there is no strong distribution shift between the training and test sets, and that the generalization performance reflects robustness to unseen patients rather than trivial distributional differences. For the encoder embeddings, the training clusters are very compact, with most samples concentrated around a small region for each class and only a few outliers, mainly for glioma and pituitary; on the test set, the overall structure is similar but slightly more dispersed. For the CNN-only features, the training PCA plot shows relatively well-separated clusters with some overlap regions; in the test split, the global layout is preserved, but glioma samples expand more into the region occupied by meningioma, consistent with the tendency to misclassify some glioma slices as meningioma. For the e4e features, no clear class-specific clusters can be observed, which is coherent with the previous observation that tumor information is strongly diluted; however, the distributions for train and test remain almost identical, indicating that there is no evident domain shift in this representation either.\\
+
+
+
+\subsection{Experiment 2C}
+
+\label{subsec:exp2c_discussion}
+
+Experiment~2C was designed to assess whether augmenting a convolutional classifier with class-conditional synthetic images generated by StyleGAN-C improves performance over a strong real-only baseline under strict patient-level splits. To this end, two complementary datasets were considered: the complete dataset, containing all available MRI slices, and a reduced dataset, in which low-quality or poorly informative slices were removed. The reduced dataset thus excludes 761 images, corresponding to approximately 25\% fewer images (see Table~\ref{tab:dataset_all_one}), while both datasets preserve rigorous patient leakage control in their train--test partitions.\\
+
+On the complete dataset, cross-validation results with different truncation values show that StyleGAN-C augmentation yields a consistent improvement over the real-only baseline. In the 3-fold setting (Table~\ref{tab:3k_test_macro}), the test accuracy increases from approximately 0.93 for real-only training to around 0.945 when adding GAN-balanced samples with $\psi = 1.4$. The 5-fold experiments (Table~\ref{tab:test_5fold_macro_real_vs_gan}) corroborate this trend: the baseline accuracy of about 0.941 rises to roughly 0.948 when using truncation $\psi = 1.4$. At the same time, runs with other truncation values (e.g. $\psi = 1.3$ or $\psi = 1.5$) do not systematically dominate across all metrics, which suggests that there is no single optimal truncation value and that performance is influenced by the particular synthetic samples drawn at each run.\\
+
+The k-fold averages primarily quantify stability by reducing variance across runs, but the individual models can be further combined into ensembles. When aggregating the folds, the real-only ensemble on the complete dataset improves accuracy from 0.941 to 0.947 (Table~\ref{tab:macro_overall_truncation}), reflecting the benefit of combining multiple decision boundaries. Adding synthetic augmentation enhances this effect: the ensemble accuracy increases from 0.947 for real-only training to 0.956 for $\psi = 1.4$, with consistent gains in macro precision, recall and F1. Per-class ensemble results (Tables~\ref{tab:test_ensemble_per_class_3fold_real_vs_gan} and~\ref{tab:ensemble5k_perclass_real_vs_gan14}) show that all three tumor classes benefit from StyleGAN-C augmentation, with particularly notable improvements for glioma and meningioma, while pituitary remains the easiest class to recognise in all settings.\\
+
+The reduced dataset provides a complementary perspective in which each slice carries more informative content. Under this configuration, the real only five fold baseline already attains an accuracy of 0.948 (Table~\ref{tab:test_truncation}), higher than the complete dataset baseline. In addition, a single full train run using all available slices reaches an test accuracy of 0.934, although this value is sensitive to random initialization and sampling and may vary across runs. For this reason, it is used only as a reference baseline when comparing against the more stable ensemble estimates obtained from the five fold cross validation protocol.
+Within the same experimental protocol and using identical random seeds, the best-performing truncation level is $\psi = 1.3$, achieving an average accuracy of 0.954. When forming ensembles, the real-only reduced ensemble reaches 0.953 accuracy, while the ensemble trained with $\psi = 1.3$ synthetic augmentation attains 0.960 (Table~\ref{tab:macro_overall_truncation_inttest}). The gains from StyleGAN-C augmentation on the reduced dataset (0.953 to 0.960) are modest and comparable in magnitude to those achieved by strong geometric augmentation alone (0.959). This suggests that while the generative approach provides a small additional benefit, much of the improvement can be attributed to increased data diversity rather than specifically to GAN-generated content.\\
+
+To disentangle whether these improvements are driven by genuine generative diversity or simply by class balancing, several ablation studies were performed. The first ablation uses the CAS metric. CAS does not measure visual realism directly; instead, it evaluates task-level alignment by comparing classifier responses on real and synthetic images from the same class. In this setting, a classifier trained exclusively on real images is evaluated on synthetic-only test sets generated by the reduced-dataset StyleGAN-C and classified by the CNN trained with truncation $\psi = 1.3$. Table~\ref{tab:cas_synth_metrics_boxed} shows that for $N = 400$ synthetic images per class and $\psi = 1.0$, CAS accuracy reaches 0.923, close to the 5-fold test accuracy of 0.948 on real data. This indicates that the generator captures the key discriminative features of the original images. For $N = 600$, CAS accuracies are slightly lower but more stable across truncation values, and the best-performing region shifts towards $\psi \in [1.2, 1.4]$, in line with the truncation values found to be effective in the augmentation experiments. The large difference in variability between $N = 400$ and $N = 600$ is also visible in Figure~\ref{fig:cas_macro_f1_truncation}, where macro F1 stabilises across truncation levels as the number of synthetic samples increases.\\
+
+The second ablation replaces StyleGAN-C augmentation with naive oversampling of minority classes by duplicating real images in the training set. This configuration emulates the class-balancing effect of synthetic augmentation while holding all other factors constant. As shown in Table~\ref{tab:exp2c_b1_oversample}, the oversampled ensemble reaches an accuracy of 0.934 on the test set of the reduced dataset, substantially below the 0.960 obtained with StyleGAN-C augmentation at $\psi = 1.3$. This gap suggests that the gains observed with GAN-based augmentation are not explained solely by changing class frequencies, but also by the additional variability introduced by the generator. A third ablation compares weak versus strong geometric augmentation regimes (Table~\ref{tab:exp2c_b2_weak_vs_strong}). Strong augmentation improves accuracy from 0.932 to 0.959 and macro F1 from 0.918 to 0.952, clearly outperforming the weak baseline. Nevertheless, synthetic augmentation still achieves slightly higher metrics than strong real-only augmentation, indicating that StyleGAN-C provides complementary transformations beyond standard geometric and photometric perturbations.\\
+
+Finally, statistical tests were conducted to assess the significance and nature of the observed differences. McNemar tests at slice level (Table~\ref{tab:mcnemar_comparison_side_by_side}) show that ensembles significantly outperform single-run models on both the complete and reduced datasets, confirming that ensembling reduces the number of discordant errors. In contrast, the comparison between real-only and GAN-augmented ensembles yields $p$-values above 0.05 in all cases, indicating that the two models tend to make errors on largely overlapping subsets of slices. In other words, synthetic augmentation does not create a qualitatively different error profile, but rather refines decision boundaries within the same difficult regions. \\
+
+The NLL analysis in Table~\ref{tab:nll_comparison} complements this view by focusing on predictive confidence. At the global level, the reduced dataset exhibits a statistically significant improvement in NLL when comparing real-only versus GAN-augmented models (with a $p$-value of approximately $0.006$), whereas the complete dataset does not. This effect is largely driven by the meningioma class, where an extremely small per-class $p$-value and lower NLL for the synthetic model suggest better calibration and more reliable probabilities. It should be noted that the accuracy improvement on the complete dataset (0.947 to 0.956) does not reach statistical significance (McNemar p = 0.080; NLL t-test p = 0.5075), unlike the reduced dataset where global NLL improvement is significant (p = 0.0065). This suggests that synthetic augmentation provides its greatest benefit when real data is limited or has been carefully curated.
+
+Overall, these results support the conclusion that StyleGAN-C augmentation yields modest but consistent gains in both accuracy and calibration, especially when combined with ensembles and when training on a carefully curated reduced dataset.\\
+
+
+
+
+
+
+In Table~\ref{tab:exp2c_b2_weak_vs_strong}, the ensemble trained with strong geometric augmentation is directly compared to the ensemble trained with StyleGAN-C synthetic images on the reduced dataset. The reported $p$-value of $0.0095$ \ref{tab:nll_ttest_reduced_complete} is below the conventional $0.05$ significance level, indicating that the two models are statistically different. Moreover, the difference in mean NLL between model~A (strong augmentation) and model~B (synthetic images) is $0.0140 > 0$, which implies that the synthetic model attains a lower NLL. In other words, the StyleGAN-C ensemble produces probability estimates that are, on average, more confident and better aligned with the true labels than those of the strong-augmentation baseline.\\
+
+The comparatively lower performance observed for the meningioma class should be interpreted in light of the underlying data distribution. In the dataset used in this study, meningioma is substantially under-represented relative to the other tumor types. Overall, there are 708 meningioma images, of which 514 are used for training and 194 for testing, compared to 446 glioma and 271 pituitary images in the test set (Table~\ref{tab:dataset_all_one}). This imbalance is further accentuated by the patient-wise splitting strategy, which reduces the effective number of distinct meningioma patients available for training. As a consequence, the classifier is exposed to a more limited variety of meningioma appearances during training and is evaluated on a relatively small and potentially less diverse test subset. This, in turn, can lead to higher variance in the estimated metrics and to lower accuracies for this class compared to glioma and pituitary. It is therefore plausible that a more balanced test set or, more generally, access to a larger number of meningioma cases would enable the model to better capture the intra-class variability of this tumor type and yield improved and more stable performance estimates for meningioma. Although class balancing on the training set was performed using synthetic images to partially counteract this effect, the meningioma metrics still lag behind those of the other classes. This suggests that data augmentation alone is insufficient to fully compensate for the limited number and diversity of real meningioma cases, particularly because the test set must remain untouched during training to avoid evaluation bias.\\
+
+Overall, these results suggest that the primary benefit of incorporating StyleGAN-C into the training pipeline is not a dramatic increase in accuracy, but a systematic improvement in probabilistic calibration. The lower NLL observed for the GAN-augmented ensembles, especially on the reduced dataset, indicates that the model is able to express uncertainty in a more reliable way. This is particularly relevant in a clinical context, where calibrated probabilities can support downstream decision-making tools more effectively than marginal gains in accuracy alone.
+
+\paragraph{Computational cost and role of latent inversion.}
+To properly assess computational cost, the three sub-experiments in Experiment~2 must be considered separately. In Experiments~2A and~2B, classification relies on latent inversion (LPIPS based inference by generation and SVMs built on e4e features, respectively). In both cases, extracting latent information through optimization or through an encoder is computationally expensive (+5 hours), and the resulting metrics are not competitive with the best discriminative CNN baseline. These configurations are therefore better interpreted as exploratory setups that investigate alternative, generation driven ways of performing classification rather than practical high performance classifiers. \\
+
+By contrast, Experiment~2C offers the best trade-off between computational cost and predictive performance. Once StyleGAN-C has been trained (a transversal requirement shared by all Experiment~2 variants), training the CNN classifier on real plus synthetic images takes on the order of 15 minutes. Under this configuration, the overall computational cost of the final framework is therefore not prohibitive, while still benefiting from the generative model for augmentation and from the interpretability tools derived from latent inversion.\\
+
+As discussed in Section~\ref{subsec:stylegan_arch}, the image resolution also plays a critical role in determining the computational cost. As the input image size increases, the number of parameters and the computational complexity of the network grow, which directly impacts both training and inference times. In the case of Experiment~2C, using a resolution of 256x256 images strikes a balance between performance and efficiency. Higher resolutions, such as 512x512 could potentially improve classification accuracy due to the finer detail in the images, but they come at a significantly higher computational cost. Conversely, using smaller resolutions like 128x128 may reduce computational demands but could also compromise the quality of information available to the model. Exploring different image sizes would provide valuable insight into how these trade-offs affect the classifier’s performance, and could guide future choices in optimizing computational resources while maintaining effective performance. 
+
+
+\subsection{Experiment 2C: data leakage via generative augmentation}
+
+To quantify the impact of data leakage in this experiment, the evaluation was repeated under a deliberately flawed protocol without any patient-level control. The same Figshare dataset was used, but the train and test splits were defined at the slice level, allowing different slices from the same patient to appear in both sets. In addition, the conditional GAN was retrained on \emph{all} available images, so that the synthetic samples could implicitly encode information from the test cohort. Under this configuration, the test performance reported in Tables~\ref{tab:external_leak_configs} and~\ref{tab:leak_ensemble_external} becomes substantially higher than in the leak-free setting. This behaviour is largely explained by the acquisition protocol: each patient contributes multiple sequences (axial, sagittal, and coronal), which in turn contain many highly similar slices. When patient-level separation is not enforced, the classifier and the generator can exploit near-duplicate appearances across splits, effectively learning to recognise specific images or anatomical layouts rather than truly generalising to new tumors. This underscores the critical importance of enforcing strict patient-level splits and avoiding any form of patient-level leakage when reporting performance metrics.\\
+
+
+\begin{table}[ht]
+\centering
+\caption{Test performance under different leakage configurations (mean over 5 folds) macro results.}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Leak type} & \textbf{Patient control} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+GAN                 & Yes  & 0.9401 & 0.9314 & 0.9343 & 0.9327 \\
+Real images only          & No   & 0.9680 & 0.9626 & 0.9647 & 0.9635 \\
+GAN                 & No   & 0.9722 & 0.9699 & 0.9670 & 0.9683 \\
+\bottomrule
+\end{tabular}
+\label{tab:external_leak_configs}
+\end{table}
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Test ensemble performance under different leak configurations.}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Leak type}        & \textbf{Patient control} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+GAN         & Yes  & 0.9539 & 0.9513 & 0.9463 & 0.9487 \\
+Real images only          & No   & 0.9793 & 0.9743 & 0.9780 & 0.9761 \\
+GAN         & No   & 0.9848 & 0.9824 & 0.9819 & 0.9821 \\
+\bottomrule
+\end{tabular}
+\label{tab:leak_ensemble_external}
+\end{table}
+
+
+\subsection{Experiment 3: Human-in-the-loop Evaluation}
+
+
+
+
+Experiment~3 was designed to quantify how real MR images compare to synthetic slices generated by the proposed model from the perspective of an expert neuroradiologist. The primary goal was to assess whether the generated images preserve diagnostically relevant tumor characteristics to a degree that enables consistent clinical interpretation. A secondary objective was to investigate whether the incorporation of XAI overlays (Grad-CAM heatmaps) has a positive impact on the diagnostic process. This subsection discusses the quantitative findings related to the evaluation of real versus synthetic images; the analysis of XAI heatmaps is presented separately.\\
+
+
+
+
+With respect to the evaluation of the synthetic images, it is important to emphasize that brain tumor diagnosis in routine clinical practice is highly sensitive to context and typically relies on multiple slices and imaging planes. A single axial slice often does not provide enough information to support a confident diagnosis, even when a lesion is present. This limitation is reflected in the experiment: in several cases the neuroradiologist explicitly refrained from assigning a tumor class, indicating that the slice was not diagnosable in isolation. When all images in the form are considered (Table~\ref{tab:hitl_all_cases}), including the non answered cases and counting them as diagnostic errors, the overall accuracy is 0.73. In this setting, real images achieve 100\% accuracy, whereas synthetic images reach only 50\%, largely because the expert was unable to reliably identify a tumor in many of the synthetic slices.\\
+
+A clearer picture emerges when the analysis is restricted to slices for which the neuroradiologist provided an explicit diagnosis (Table~\ref{tab:hitl_answered_only}). Under this criterion, the overall accuracy increases from 0.73 to 0.96, highlighting that the expert behaves conservatively and only commits to a diagnostic label when sufficiently confident. For synthetic images, the accuracy rises from 0.50 to 0.90 once non-diagnosed slices are excluded, while real images remain at 1.00 in both analyzes. This pattern is mirrored in the confidence and diagnostic utility ratings: across all images, the mean confidence and utility are 2.91 and 2.88, respectively, whereas for the subset of slices with a diagnosis these averages increase to 3.44 and 3.48. The change is entirely driven by the synthetic images. For synthetic slices that received a diagnosis, both mean confidence and mean utility reach 3.0, a substantial improvement over the corresponding values when all synthetic images are included (2.22 and 2.11). These results suggest that the subset of synthetic images that can be correctly classified by the expert behaves similarly to real MRIs in terms of perceived diagnostic value, whereas the remaining slices are effectively non-usable from a clinical standpoint.\\
+
+Out of the 18 synthetic images presented, 9 were correctly classified by the neuroradiologist, indicating that approximately 50\% of the generated samples have meaningful diagnostic utility. When these correctly classified synthetic images are further stratified by tumor type, the average diagnostic utility for pituitary tumors reaches 3.8, while glioma and meningioma slices achieve lower mean utilities of 2.33 and 2.00, respectively. This pattern indicates that the generator produces more realistic and clinically useful images for pituitary tumors than for the other classes, consistent with the findings from the previous experiments, where the pituitary class also showed the strongest classification performance. A plausible explanation is that imperfections or class imbalance in the original training dataset propagate through the generative model: weaker or lower quality source images for certain tumor types may lead to poorer augmentations, which in turn can inject noise into any classifier that relies on these synthetic samples.\\
+
+The second component of Experiment~3 analyses the impact of Grad-CAM heatmaps on expert performance. As summarized in Table~\ref{tab:hitl_xai_all_cases}, all responses were split into two groups: paired images, where the MRI slice was presented together with an overlaid Grad-CAM heatmap, and non-paired images, where only the raw MRI was shown. When unanswered cases are treated as errors, the accuracy for XAI-paired images reaches 0.78, compared to 0.67 for non-paired images. As in the analysis of real versus synthetic images, this difference is driven entirely by the synthetic slices, since real images achieve 100\% accuracy irrespective of whether an overlay is present.\\
+
+The same pattern is reflected in the confidence and diagnostic utility scores. For all cases, XAI-paired images achieve mean confidence and utility values of 3.28 and 3.33, respectively, whereas non-paired images reach only 2.47 and 2.33. This improvement is attributable to the synthetic images: for synthetic slices without heatmaps, the mean confidence and utility are as low as 1.44 and 1.22, but these values increase to 3.0 and 3.0 when Grad-CAM overlays are provided. In other words, when the generator produces imperfect or difficult synthetic images, the presence of an XAI heatmap appears to make these cases more interpretable and clinically useful to the neuroradiologist. Interestingly, non-paired real images display slightly higher confidence and utility scores than their paired counterparts, even though both groups reach 100\% accuracy. Given the small sample size and perfect performance in both conditions, this difference is likely dominated by sampling variability rather than reflecting a systematic negative effect of overlays on real MRIs.\\
+
+When the analysis is restricted to effectively diagnosed slices (Table~\ref{tab:hitl_xai_answered_only}), the same qualitative trends persist, with all metrics increasing due to the expert's conservative behavior. In this filtered view, the XAI-paired group achieves 100\% accuracy, with mean confidence and diagnostic utility increasing to 3.93 and 4.00, respectively. Non-paired images also improve in this setting, but still exhibit lower average confidence and utility than XAI-paired images. This suggests that, conditional on the neuroradiologist committing to a diagnosis, the presence of a heatmap is associated with more confident and more strongly perceived useful decisions, especially for synthetic slices.\\
+
+Finally, an additional analysis was conducted to explicitly assess the anatomical plausibility of the Grad-CAM overlays. For each image with an XAI overlay, the neuroradiologist rated whether the heatmap correctly localized the tumor region using three categories: \emph{full} (the heatmap clearly covered the lesion), \emph{partial} (only partial or ambiguous overlap), and \emph{no} (no meaningful overlap with the tumor). As summarized in Table~\ref{tab:hitl_xai_rating_real_fake_all_cases}, real MR images with Grad-CAM overlays were always classified correctly (accuracy = 1.00), and the mean confidence and diagnostic utility scores were very similar between yes and no cases. This suggests that, for real images, Grad-CAM overlays do not materially change the perceived usefulness of the image, likely because the neuroradiologist is skilled enough to reach a confident diagnosis from the raw MRIs alone.\\
+
+For synthetic images, the effect of the heatmap rating is much more pronounced. When Grad-CAM overlay was determined to correctly localize tumor (\emph{full} or \emph{partial}), neuroradiologist achieved 100\% precision, with mean confidence and diagnostic utility scores, both equal to 4.33. In contrast, synthetic images whose heatmaps were rated as \emph{no} exhibited a markedly lower accuracy of 0.33 and substantially reduced mean confidence and utility (both 2.33). These preliminary findings suggest that when Grad-CAM correctly highlights the tumor region, it may enhance the expert's confidence and perceived diagnostic usefulness for synthetic images. However, these results are based on a very small sample (n=3 for synthetic images with correct heatmaps) and should be interpreted with caution. For real images, however, the diagnostic ceiling (accuracy = 1.00 in all cases) makes it difficult to draw strong conclusions about any additional benefit provided by the overlay. \\
+
+In summary, Experiment~3 suggests that roughly half of the images synthesized by the generator exhibit sufficient quality and anatomical plausibility to support expert-level tumor diagnosis, while the remaining half are either non-diagnosable or of limited clinical value. The diagnostic usefulness of the generated images appears to depend strongly on the quality and representativeness of the training data for each tumor class. Consequently, synthetic images should not be used indiscriminately: instead, they should be filtered or curated, for example using automated quality metrics or expert review, before being incorporated into downstream classification pipelines. The XAI results are encouraging, showing empirically that, when Grad-CAM is correctly trained and succeeds in highlighting the affected region, it can improve the confidence and diagnostic value of synthetic images. As future work, these findings should be validated with a larger number of experts and a broader set of cases to confirm their robustness and generalization. In addition, training a new StyleGAN-C model on higher quality and better curated data, together with systematically optimized Grad-CAM configurations, could further improve the realism of the synthetic images and the reliability of the corresponding explanations.\\
+
+
+The HITL component in this thesis should be interpreted as a pilot feasibility study rather than a large-scale clinical validation. The number of participating neuroradiologists is limited and the evaluation protocol focuses on a restricted subset of images and scenarios. Consequently, the HITL results provide initial evidence about how experts perceive the realism and usefulness of StyleGAN-C samples and Grad-CAM explanations, but they cannot be directly generalized to routine clinical practice. Larger, multi-reader studies will be required to draw stronger conclusions about clinical deployment. Nevertheless, the results provide valuable qualitative and quantitative insights into how experts perceive both real and synthetic images, as well as the added value of Grad-CAM overlays. The observed class wise behavior of the generator is consistent with the inherent ambiguity between glioma and meningioma in the underlying dataset: in both the generative and discriminative experiments, these two tumor types are more frequently confused than pituitary lesions, and the neuroradiologist ratings confirm that synthetic glioma and meningioma often fail to exhibit sufficiently distinctive structural traits. This suggests that StyleGAN-C is not introducing entirely new sources of ambiguity, but instead reflects and magnifies the limited diversity and intrinsic overlap between classes already present in the underlying data distribution. A logical next step is therefore to involve multiple radiologists and increase the number and diversity of evaluated cases. In parallel, future work should explore either more diverse training data for glioma and meningioma in order to reduce class dependent biases and improve the clinical reliability of synthetic images and their associated explanations.
+
+\subsection{Causal Interpretation of the Results}
+
+Beyond demonstrating that the proposed methods improve classification performance, the results of this thesis clarify why the hybrid generative--discriminative framework is particularly effective under specific data regimes. The empirical gains observed in Experiments~2B and~2C are most pronounced under conditions of limited sample size, class imbalance, and strict patient-level data leakage control. In such settings, purely discriminative CNN-based models are more susceptible to overfitting and unstable decision boundaries, whereas the inclusion of generative structure introduces an inductive bias that regularizes learning and stabilizes representations.\\
+
+From a causal and methodological perspective, the generative component should not be interpreted merely as a mechanism for increasing the apparent size of the training set. Instead, the class-conditional StyleGAN-C learns a structured latent space that captures anatomically plausible variations of tumor appearance conditioned on diagnosis. Exposing the classifier to this controlled and semantically meaningful variability helps mitigate data scarcity and imbalance, thereby improving generalization. This also explains why the relative advantage of generative augmentation diminishes as the availability of real labeled data increases, and why its benefits are most evident in reduced and imbalanced datasets.\\
+
+Crucially, all results must be interpreted in light of the strict patient-level data leakage control enforced throughout the experimental protocol. By ensuring that no slices originating from the same patient appear across training and evaluation folds, the framework prevents implicit memorization of patient-specific anatomical features. Without this constraint, both synthetic augmentation and latent inversion could artificially inflate performance metrics. Under leakage-free conditions, however, the observed improvements are consistent with enhanced generalization rather than data contamination, as ensured by the strict patient-level partitioning, which substantially strengthens the validity of the findings.\\
+
+Overall, these results validate not only that the proposed framework functions effectively, but also clarify the conditions under which generative modeling provides tangible value. In particular, generative components are most beneficial when data is scarce, unevenly distributed, or when evaluation protocols enforce stringent generalization constraints, as is required in realistic clinical settings.
+
+
+\subsection{Selected Framework}
+
+As a final model selection step, the three classification experiments were compared in terms of their best patient-level performance. Experiment~2A achieved a maximum accuracy of 0.838 with the CNN baseline, while Experiment~2B reached 0.9473 using the encoder. Experiment~2C obtained the highest accuracy, reaching 0.960 under the GAN-balanced training regime. For this reason, Experiment~2C is adopted as the final classification framework, using the CNN backbone not only for prediction but also as the basis for image based explanations via Grad-CAM. In the proposed pipeline, StyleGAN-C is first trained on the brain tumor MRI dataset to learn a class conditional generative model. The resulting generator is then used to balance the training folds of the CNN by synthesizing additional samples for under represented tumor classes during cross-validation. Finally, the trained CNN classifier is equipped with Grad-CAM to produce slice-level heatmaps that explain the model's decisions, yielding an end to end framework that combines generative augmentation, robust classification, and post-hoc visual explainability.
+
+
+\section{Comparison with Baselines and State of the Art}
+
+
+This section consolidates the quantitative and qualitative results obtained across all experiments and positions them with respect to established baselines and SOTA methods in brain tumor MRI classification.
+
+
+\subsection{Experiment 1}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Image reconstruction and distribution metrics for Experiment~1 (StyleGAN-C on the reduced Figshare dataset). PSNR and SSIM are higher-is-better; LPIPS and FID are lower-is-better.}
+\label{tab:image_metrics_lpips_psnr_ssim_fid}
+\begin{tabular}{llcccc}
+\toprule
+Experiment & Real class / Setting & LPIPS & PSNR (dB) & SSIM & FID \\
+\midrule
+1 & Glioma     & $0.21 \pm 0.07$ & $15.46 \pm 1.86$ & $0.54 \pm 0.09$ & 123.91 \\
+1 & Meningioma & $0.28 \pm 0.08$ & $13.91 \pm 1.64$ & $0.47 \pm 0.10$ & 142.13 \\
+1 & Pituitary  & $0.26 \pm 0.08$ & $13.30 \pm 1.63$ & $0.38 \pm 0.09$ & 168.52 \\
+\midrule
+1 & Reconstructions (Paired) 
+              & $0.25 \pm 0.08$ & $14.43 \pm 1.98$ & $0.48 \pm 0.12$ & 103.96 \\
+1 & Global (unpaired, $\psi = 1.0$) 
+              & --                & --               & --                & 46.08 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\small
+\caption{Comparison of reported FID scores for selected generative models in brain tumor MRI.}
+\label{tab:generative_models_fid_only}
+\begin{tabular}{lccccc}
+\toprule
+Author (Year) & Technique & Conditional & Dataset & Resolution & FID \\
+\midrule
+Li et al. (2020) \cite{li2020tumorgan}        & TumorGAN     & No  & Brats2017  & $256 \times 256$  & 77.43 \\
+Fetty et al. (2019) \cite{Fetty2020}         & StyleGAN    & No  & 117 Patients         & $512 \times 512$  & 13.00 \\
+Güven et al. (2023) \cite{Guven2023BrainMRI} & SSimDCL    & No  & 2,014 images           & $256 \times 256$  & 92.36 \\
+Zuo et al. (2025) \cite{zuo2025multichannel} & Diffusion Model    & No  & LGG    & $256 \times 256$                 & 70.58 \\
+\midrule
+\textbf{Proposed Model}         & \textbf{StyleGAN-C}   & \textbf{Yes}  & \textbf{Figshare}              & \textbf{$256 \times 256$}  & \textbf{46.08} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The proposed StyleGAN-C model achieves the lowest FID score (46.08) among the compared generative models in the literature, demonstrating its superior performance in generating class conditional MRI images. The FID (Fréchet Inception Distance) is a widely used metric to evaluate the quality of generated images by comparing the distribution of real and generated image features. A lower FID indicates a closer match between these distributions, signifying that the generated images are more realistic and similar to the real data. The model by Fetty et al. (2019) reports an FID of 13, but it was trained for over a month, raising concerns of potential overfitting, which may limit its generalization capability. Many studies focus more on classification tasks rather than image generation, resulting in a scarcity of direct comparisons for generative performance. Therefore, while the StyleGAN-C model's FID score stands out, it is essential to recognize that there is a lack of large-scale studies specifically benchmarking generative performance in medical imaging, making direct comparisons challenging. Additionally, it is important to consider that the datasets used in these studies are different, and their quality may vary significantly. This variation in dataset characteristics can impact the performance metrics, making it difficult to establish a clear and fair comparison across different generative models.
+
+
+
+\begin{table}[H]
+\centering
+\small
+\caption{Classification Accuracy Score (CAS) for synthetic-only samples generated by StyleGAN-C in Experiment~1.}
+\label{tab:global_summary_exp1_cas}
+\begin{tabular}{llcc}
+\toprule
+Experiment & Setting & Dataset & Accuracy \\
+\midrule
+1 & CAS ($N=400$, $\psi = 1.0$) & Figshare & 0.923 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Traditional evaluation metrics in medical image generation, such as FID, PSNR, and SSIM, focus on visual similarity but fail to assess the practical utility of synthetic images in real-world tasks. This study introduces the Classification Accuracy Score (CAS), which directly measures how well synthetic images contribute to downstream tasks like tumor classification. While CAS has been used in other domains, this is the first study to apply it to brain tumor MRI generation and classification, contributing to the field of generative models in medical imaging. By incorporating CAS, a more clinically relevant evaluation framework is proposed, demonstrating both visual fidelity and potential diagnostic impact. However, the standardization of truncation values and the number of images used for this metric need further discussion to ensure consistent and reliable evaluations.
+
+
+
+
+\subsection{Experiment 2}
+
+
+\begin{table}[H]
+\centering
+\small
+\caption{Summary of the main quantitative results for Experiments~2A--2C (classification and GAN-based augmentation).}
+\label{tab:global_summary_exp2_all}
+\begin{tabular}{llccc}
+\toprule
+Experiment & Setting & Dataset & Accuracy & Macro F1 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Experiment 2A: classification by generation}} \\
+2A & CNN (CAS) & Figshare & 0.838  & 0.852 \\
+2A & LPIPS & Figshare & 0.765  & 0.757 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Experiment 2B: feature comparison}} \\
+2B & CNN SVM      & Figshare & 0.937 & 0.928 \\
+2B & Encoder SVM  & Figshare & 0.947 & 0.939 \\
+2B & e4e SVM      & Figshare & 0.832 & 0.813 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Experiment 2C: GAN-based augmentation (best ensembles)}} \\
+2C & Real-only ensemble (5-fold, complete)          & Figshare & 0.947 & 0.941 \\
+2C & GAN ($\psi=1.4$) ensemble (5-fold, complete)   & Figshare & 0.956 & 0.951 \\
+2C & Real-only ensemble (5-fold, reduced)           & Figshare & 0.953 & 0.945 \\
+2C & GAN ($\psi=1.3$) ensemble (5-fold, reduced)    & Figshare & 0.960 & 0.954 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\small
+\caption{ML/DL comparison for brain tumor MRI classification. NR: not reported. Unless explicitly stated by the authors, results are slice-level rather than patient-level.}
+\label{tab:classification_models_comparison}
+\begin{tabular}{llccccc}
+\toprule
+Author (Year) & Technique & PC & Dataset & Accuracy \\
+\midrule
+~\cite{Cheng2015} (2015) & GLCM & Yes & Figshare & 92.3 \\
+~\cite{abiwinanda} (2018) & CNN & NR & Figshare Subset & 94.7 \\
+~\cite{deepak2019brain} (2019) & CNN & Yes & Figshare & 93.0 \\
+~\cite{sajjad2019multigrade} (2019) & VGG19 TL & NR & Figshare + Radiopedia & 96.1 \\
+~\cite{Rehman2020} (2019) & VGG16 TL & Yes & Figshare & 94.6 \\
+~\cite{Tummala2022BrainTumorViT} (2024) & Ensemble ViTs & NR & Figshare & 98.7 \\
+~\cite{filvantorkaman2025fusionbasedbraintumorclassification} (2025) & Ensemble (Soft Voting) & NR & Figshare & 91.7 \\
+\hline
+\textbf{Proposed Model} & \textbf{StyleGAN-C + CNN} & \textbf{Yes} & \textbf{Figshare} & \textbf{96.0} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+To compare the proposed model, only three multiclass studies were found using the Figshare dataset with patient-level control for comparison. This was done to enable a fairer comparison between different models and results. It can be observed that, in general, models without patient control tend to achieve higher accuracies than those with patient control. This is primarily due to the lack of data leakage control between the training and testing splits, where images from the same patient are very similar and appear in both tests. Consequently, these models end up learning patient specific features rather than tumor specific features, which leads to inflated performance.\\
+
+In contrast, the proposed model, by incorporating data leakage control, not only reduces overfitting but also achieves performance metrics at the SOTA level, outperforming studies that do include patient control.
+
+
+\subsection{Experiment 3}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Summary of the main quantitative results for Experiment~3 (HITL and XAI; unanswered counted as errors).}
+\label{tab:global_summary_exp3}
+\begin{tabular}{llcccc}
+\toprule
+Experiment & Setting & Dataset & Accuracy & Mean confidence & Mean utility \\
+\midrule
+3 & Real images (all)      & Figshare & 1.00 & 3.73 & 3.80 \\
+3 & Synthetic images (all) & Figshare & 0.50 & 2.22 & 2.11 \\ \hline
+3 & XAI paired (all)       & Figshare & 0.78 & 3.28 & 3.33 \\
+3 & XAI not paired (all)   & Figshare & 0.67 & 2.47 & 2.33 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No experiments were found where medical professionals assess HITL studies focused on retraining models or testing XAI models in the context of medical imaging. This study is the first to integrate a quantitative HITL evaluation specifically in brain tumor classification. However, it is not the first in the scientific field, as referenced in \cite{manz2025do}, where an interactive platform using a Likert scale was implemented for prostate carcinoma evaluation. The absence of HITL in retraining models or testing XAI further highlights the novelty and importance of this approach in advancing clinical decision-making in medical imaging. It should be noted that this is only a pilot experiment and can be taken as a foundation for developing better integrations with clinical experts, paving the way for more robust and effective HITL applications in medical imaging systems.
+
+
+
+
+\section{Strengths and Limitations of the Study}
+\begin{enumerate}
+    \item \textbf{Strengths:}
+    \begin{enumerate}
+    
+        \item \textbf{Integration of StyleGAN-C for data augmentation:} Improves model performance by generating high quality synthetic images that enhance classification capabilities.
+        
+        \item \textbf{Competitive FID and CAS scores:} The model demonstrates both visual fidelity and diagnostic utility, providing strong evidence of the synthetic images' quality.
+        
+        \item \textbf{Quantitative HITL evaluation:} A unique contribution, providing valuable clinical insights into the model’s performance, particularly in real-world applications.
+        
+        \item \textbf{Incorporation of Grad-CAM heatmaps for Explainable AI (XAI):} Improves the interpretability of the model’s decisions, helping clinicians understand the model’s reasoning.
+
+        
+        \item \textbf{Strict leakage control:} All main experiments use patient-wise splits with explicit control of patient identifiers, ensuring no patient appears in both training and test sets. 
+
+        
+        \item \textbf{Beyond accuracy:} The evaluation includes not only accuracy and macro F1, but also CAS, negative log-likelihood, McNemar and PCA tests.
+    \end{enumerate}
+    
+    \item \textbf{Limitations:}
+    
+    \begin{enumerate}
+        \item \textbf{Single dataset:} The study is based on a single dataset (Figshare), limiting the external validation and generalizability of the results to different populations and imaging protocols.
+
+        
+        \item \textbf{Small sample size of expert evaluations:} The number of experts involved in the HITL process is limited, which calls for larger, multi-center studies to better generalize the findings.
+
+        
+        \item \textbf{High computational cost:} The computational burden of generating synthetic images and retraining classifiers can limit the scalability of the model for practical, real-time use in clinical settings.
+
+        
+        \item \textbf{Pilot experiment:} The evaluation is based on a pilot experiment, and further optimization and testing are necessary to improve the model’s effectiveness and robustness.
+
+        
+        \item \textbf{Partial generative validity and class dependence:} Human evaluation shows that only about half of the synthetic images are diagnostically useful. The model performs better for pituitary tumors compared to glioma and meningioma, indicating that synthetic images should be curated or filtered before being incorporated into training to ensure quality and minimize bias.
+    \end{enumerate}
+\end{enumerate}
