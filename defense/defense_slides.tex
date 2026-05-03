@@ -95,8 +95,9 @@
           \quad \textcolor{myblue}{\textbf{Glioma}}: intra-axial, malignant\\
           \quad \textcolor{mygreen}{\textbf{Meningioma}}: extra-axial, slow-growing\\
           \quad \textcolor{mygold}{\textbf{Pituitary}}: sellar, benign
-        \item \textcolor{myred}{\textbf{Data scarcity:}} few public datasets
+        \item \textbf{Data scarcity:} few public datasets
               with reliable patient-level annotation
+        \item \textbf{Low clinical adoption:} clinicians do not trust black-box models
       \end{itemize}
       \vspace{0.3em}
       \textbf{Role of AI:} provide diagnostic support and
@@ -226,7 +227,7 @@
     \item \textbf{DCGAN} (Ghassemi et al., 2020). \textbf{Creates} MRI slices from
           random noise. \emph{$64\times64$ · Figshare}
     \item \textbf{TumorGAN} (Li et al., 2020). \textbf{Transforms} healthy slices
-          into tumor-bearing ones (pix2pix). \emph{$256\times256$ · BraTS 2017}
+          into tumor ones (pix2pix). \emph{$256\times256$ · BraTS 2017}
     \item \textbf{LR-cGAN} (Zhan et al., 2021). \textbf{Combines} MRI
           modalities (T1+T2 $\rightarrow$ FLAIR). \emph{$256\times256$ · BraTS 2015}
     \item \textbf{MCFDiffusion} (Zuo et al., 2025). \textbf{Combines} healthy and
